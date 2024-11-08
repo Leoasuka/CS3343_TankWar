@@ -86,31 +86,42 @@ public class Tank {
 			return;
 		}
 
-		// Draw tank body
 		Color originalColor = graphics.getColor();
+
+		// Draw tracks with increased width
+		graphics.setColor(Color.DARK_GRAY);
+		graphics.fillRect(currentX - 5, currentY, 5, TANK_HEIGHT); // Left track
+		graphics.fillRect(currentX + TANK_WIDTH, currentY, 5, TANK_HEIGHT); // Right track
+
+		// Draw tank body
 		graphics.setColor(isPlayerTank ? Color.RED : Color.BLUE);
-		// Draw tank chassis
 		graphics.fillRect(currentX, currentY, TANK_WIDTH, TANK_HEIGHT);
 
-		// Add track details
-		graphics.setColor(Color.DARK_GRAY);
-		graphics.fillRect(currentX - 2, currentY, 2, TANK_HEIGHT); // Left track
-		graphics.fillRect(currentX + TANK_WIDTH, currentY, 2, TANK_HEIGHT); // Right track
+		// Draw armor plate textures
+		graphics.setColor(isPlayerTank ? new Color(180, 0, 0) : new Color(0, 0, 180));
+		graphics.drawLine(currentX, currentY + TANK_HEIGHT/3,
+				currentX + TANK_WIDTH, currentY + TANK_HEIGHT/3);
+		graphics.drawLine(currentX, currentY + 2*TANK_HEIGHT/3,
+				currentX + TANK_WIDTH, currentY + 2*TANK_HEIGHT/3);
 
-		// Add turret
-		int turretWidth = 20;
-		int turretHeight = 20;
-		int turretX = currentX + (TANK_WIDTH - turretWidth) / 2;
-		int turretY = currentY + (TANK_HEIGHT - turretHeight) / 2;
+		// Draw turret with reduced size
+		int turretWidth = 25;
+		int turretHeight = 25;
+		int turretX = currentX + (TANK_WIDTH - turretWidth)/2;
+		int turretY = currentY + (TANK_HEIGHT - turretHeight)/2;
 		graphics.setColor(Color.DARK_GRAY);
 		graphics.fillOval(turretX, turretY, turretWidth, turretHeight);
 
+		// Add armor ring around turret
+		graphics.setColor(isPlayerTank ? new Color(180, 0, 0) : new Color(0, 0, 180));
+		graphics.drawOval(turretX, turretY, turretWidth, turretHeight);
+
 		graphics.setColor(originalColor);
 
-		// Draw health bar for player tank
+		// Draw health bar if player tank
 		if(isPlayerTank) healthBar.render(graphics);
 
-		// Draw tank barrel
+		// Draw barrel
 		renderBarrel(graphics);
 
 		// Update position
@@ -265,32 +276,51 @@ public class Tank {
 		int centerY = currentY + TANK_HEIGHT/2;
 		graphics.setColor(Color.DARK_GRAY);
 
-		// Draw longer barrel based on direction
-		int barrelLength = 25;
+		// Set barrel dimensions
+		int barrelLength = 30;
+		int barrelWidth = 8;  // Width of the barrel
+
+		// Draw thicker barrel based on direction
 		switch(barrelDirection) {
 			case L:
-				graphics.drawLine(centerX, centerY, centerX - barrelLength, centerY);
+				graphics.fillRect(centerX - barrelLength, centerY - barrelWidth/2,
+						barrelLength, barrelWidth);
 				break;
 			case LU:
-				graphics.drawLine(centerX, centerY, centerX - barrelLength, centerY - barrelLength);
+				int dx = (int)(barrelLength * 0.707);
+				int dy = (int)(barrelLength * 0.707);
+				graphics.fillRect(centerX - dx, centerY - dy - barrelWidth/2,
+						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
 				break;
 			case U:
-				graphics.drawLine(centerX, centerY, centerX, centerY - barrelLength);
+				graphics.fillRect(centerX - barrelWidth/2, centerY - barrelLength,
+						barrelWidth, barrelLength);
 				break;
 			case RU:
-				graphics.drawLine(centerX, centerY, centerX + barrelLength, centerY - barrelLength);
+				dx = (int)(barrelLength * 0.707);
+				dy = (int)(barrelLength * 0.707);
+				graphics.fillRect(centerX, centerY - dy - barrelWidth/2,
+						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
 				break;
 			case R:
-				graphics.drawLine(centerX, centerY, centerX + barrelLength, centerY);
+				graphics.fillRect(centerX, centerY - barrelWidth/2,
+						barrelLength, barrelWidth);
 				break;
 			case RD:
-				graphics.drawLine(centerX, centerY, centerX + barrelLength, centerY + barrelLength);
+				dx = (int)(barrelLength * 0.707);
+				dy = (int)(barrelLength * 0.707);
+				graphics.fillRect(centerX, centerY + dy - barrelWidth/2,
+						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
 				break;
 			case D:
-				graphics.drawLine(centerX, centerY, centerX, centerY + barrelLength);
+				graphics.fillRect(centerX - barrelWidth/2, centerY,
+						barrelWidth, barrelLength);
 				break;
 			case LD:
-				graphics.drawLine(centerX, centerY, centerX - barrelLength, centerY + barrelLength);
+				dx = (int)(barrelLength * 0.707);
+				dy = (int)(barrelLength * 0.707);
+				graphics.fillRect(centerX - dx, centerY + dy - barrelWidth/2,
+						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
 				break;
 		}
 	}
@@ -494,12 +524,35 @@ public class Tank {
 	 * Inner class representing tank's health bar
 	 */
 	private class HealthBar {
+		// Constants for health bar appearance
+		private static final int BAR_HEIGHT = 6;  // Reduced height for less intrusive look
+		private static final int BAR_VERTICAL_OFFSET = 8;  // Distance above tank
+
 		public void render(Graphics graphics) {
 			Color originalColor = graphics.getColor();
-			graphics.setColor(Color.RED);
-			graphics.drawRect(currentX, currentY-10, TANK_WIDTH, 10);
-			int healthBarWidth = TANK_WIDTH * healthPoints/100;
-			graphics.fillRect(currentX, currentY-10, healthBarWidth, 10);
+
+			// Calculate center-aligned position
+			int barWidth = TANK_WIDTH - 10;  // Slightly narrower than tank
+			int barX = currentX + (TANK_WIDTH - barWidth) / 2;  // Center horizontally
+			int barY = currentY - BAR_HEIGHT - BAR_VERTICAL_OFFSET;  // Position above tank
+
+			// Draw background (empty bar)
+			graphics.setColor(Color.GRAY);
+			graphics.fillRect(barX, barY, barWidth, BAR_HEIGHT);
+
+			// Draw health bar
+			if (healthPoints > 30) {
+				graphics.setColor(Color.GREEN);
+			} else {
+				graphics.setColor(Color.RED);  // Red when health is low
+			}
+			int currentBarWidth = (int)((barWidth * healthPoints) / 100.0);
+			graphics.fillRect(barX, barY, currentBarWidth, BAR_HEIGHT);
+
+			// Draw border
+			graphics.setColor(Color.DARK_GRAY);
+			graphics.drawRect(barX, barY, barWidth, BAR_HEIGHT);
+
 			graphics.setColor(originalColor);
 		}
 	}

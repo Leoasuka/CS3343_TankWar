@@ -16,20 +16,18 @@ public class WallManager {
     }
 
     // Constants for wall properties
-    private static final int MIN_WALL_LENGTH = 40;
-    private static final int MAX_WALL_LENGTH = 200;
-    private static final int MIN_WALL_THICKNESS = 20;
-    private static final int MAX_FORTIFIED_HEALTH = 500;
-    private static final int TEMPORARY_WALL_DURATION = 15000; // 15 seconds
+    public static final int MIN_WALL_LENGTH = 40;
+    public static final int MAX_WALL_LENGTH = 200;
+    public static final int MIN_WALL_THICKNESS = 20;
+    public static final int MAX_FORTIFIED_HEALTH = 500;
+    public static final int TEMPORARY_WALL_DURATION = 15000; // 15 seconds
 
-    // Lists to store different types of walls
+    private final WallGenerator generator;
+
     private final List<Wall> permanentWalls = new ArrayList<>();
     private final List<BreakableWall> breakableWalls = new ArrayList<>();
     private final List<TemporaryWall> temporaryWalls = new ArrayList<>();
-
-    // Reference to game client
     private final TankClient gameClient;
-    private final Random random = new Random();
 
     /**
      * Constructor for wall manager
@@ -37,13 +35,19 @@ public class WallManager {
      */
     public WallManager(TankClient client) {
         this.gameClient = client;
-        initializeDefaultWalls();
+        this.generator = new WallGenerator(this);
+        generator.generateDefaultLayout();
+    }
+
+    public void generateRandomWalls(int count) {
+        if (count <= 0) return;
+        generator.generateRandomWalls(count);
     }
 
     /**
      * Initializes default wall layout
      */
-    private void initializeDefaultWalls() {
+    /*private void initializeDefaultWalls() {
         // Add permanent walls
         addPermanentWall(100, 200, 20, 150);  // Vertical wall
         addPermanentWall(300, 100, 300, 20);  // Horizontal wall
@@ -54,7 +58,7 @@ public class WallManager {
 
         // Add fortified walls
         addFortifiedWall(400, 200, 20, 100);
-    }
+    }*/
 
     /**
      * Updates all walls' state
@@ -95,6 +99,7 @@ public class WallManager {
      * Adds a permanent wall
      */
     public void addPermanentWall(int x, int y, int width, int height) {
+        if (width <= 0 || height <= 0) return;
         permanentWalls.add(new Wall(x, y, width, height, gameClient));
     }
 
@@ -102,6 +107,7 @@ public class WallManager {
      * Adds a breakable wall
      */
     public void addBreakableWall(int x, int y, int width, int height) {
+        if (width <= 0 || height <= 0) return;
         breakableWalls.add(new BreakableWall(x, y, width, height, gameClient));
     }
 
@@ -109,6 +115,7 @@ public class WallManager {
      * Adds a fortified wall
      */
     public void addFortifiedWall(int x, int y, int width, int height) {
+        if (width <= 0 || height <= 0) return;
         breakableWalls.add(new BreakableWall(x, y, width, height, gameClient, MAX_FORTIFIED_HEALTH));
     }
 
@@ -116,6 +123,7 @@ public class WallManager {
      * Adds a temporary wall
      */
     public void addTemporaryWall(int x, int y, int width, int height) {
+        if (width <= 0 || height <= 0) return;
         temporaryWalls.add(new TemporaryWall(x, y, width, height, gameClient,
                 System.currentTimeMillis() + TEMPORARY_WALL_DURATION));
     }
@@ -124,7 +132,7 @@ public class WallManager {
      * Generates random walls in the game area
      * @param count Number of walls to generate
      */
-    public void generateRandomWalls(int count) {
+    /*public void generateRandomWalls(int count) {
         for (int i = 0; i < count; i++) {
             int x = random.nextInt(TankClient.GAME_WIDTH - MAX_WALL_LENGTH);
             int y = random.nextInt(TankClient.GAME_HEIGHT - MAX_WALL_LENGTH);
@@ -147,7 +155,7 @@ public class WallManager {
                     break;
             }
         }
-    }
+    }*/
 
     /**
      * Gets all walls for collision detection
@@ -155,9 +163,9 @@ public class WallManager {
      */
     public Wall[] getAllWalls() {
         List<Wall> allWalls = new ArrayList<>();
-        allWalls.addAll(permanentWalls);
-        allWalls.addAll(breakableWalls);
-        allWalls.addAll(temporaryWalls);
+        if (!permanentWalls.isEmpty()) allWalls.addAll(permanentWalls);
+        if (!breakableWalls.isEmpty()) allWalls.addAll(breakableWalls);
+        if (!temporaryWalls.isEmpty()) allWalls.addAll(temporaryWalls);
         return allWalls.toArray(new Wall[0]);
     }
 
@@ -167,22 +175,22 @@ public class WallManager {
      * @return true if collision occurred
      */
     public boolean handleMissileCollision(Missile missile) {
+        if (missile == null) return false;
         for (Wall wall : getAllWalls()) {
-            if (wall.handleMissileCollision(missile)) {
-                // Missile is deactivated inside handleMissileCollision
+            if (wall != null && wall.handleMissileCollision(missile)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean handleTankCollision(Tank tank) {
+    public void handleTankCollision(Tank tank) {
+        if (tank == null) return;
         for (Wall wall : getAllWalls()) {
-            if (tank.handleWallCollision(wall)) {
-                return true;
+            if (wall != null && tank.handleWallCollision(wall)) {
+                return;
             }
         }
-        return false;
     }
 }
 
@@ -334,5 +342,141 @@ class TemporaryWall extends Wall {
 
     public boolean hasExpired(long currentTime) {
         return currentTime > expirationTime;
+    }
+}
+
+/**
+ * WallGenerator Class - Handles wall generation logic and positioning
+ * Manages random wall generation and positioning strategies
+ */
+class WallGenerator {
+    private final WallManager wallManager;
+    private final Random random = new Random();
+
+    // Constants for generation settings
+    private static final int PADDING = 20;
+    private static final int EDGE_PADDING = 50;
+    private static final int MAX_POSITION_ATTEMPTS = 50;
+
+    // Probability constants for wall types
+    private static final int PERMANENT_WALL_CHANCE = 40;  // 40%
+    private static final int BREAKABLE_WALL_CHANCE = 30;  // 30%
+    private static final int FORTIFIED_WALL_CHANCE = 20;  // 20%
+    // Remaining 10% is for temporary walls
+
+    /**
+     * Constructor for wall generator
+     * @param wallManager Reference to the wall manager
+     */
+    public WallGenerator(WallManager wallManager) {
+        this.wallManager = wallManager;
+    }
+
+    /**
+     * Checks if a new wall would overlap with existing walls
+     */
+    private boolean wouldOverlap(int x, int y, int width, int height) {
+        Rectangle newWallBounds = new Rectangle(x, y, width, height);
+
+        // Add padding around walls
+        Rectangle paddedBounds = new Rectangle(
+                x - PADDING,
+                y - PADDING,
+                width + PADDING * 2,
+                height + PADDING * 2
+        );
+
+        // Check overlap with existing walls
+        for (Wall wall : wallManager.getAllWalls()) {
+            if (paddedBounds.intersects(wall.getCollisionBounds())) {
+                return true;
+            }
+        }
+
+        // Check screen edge proximity
+        return x < EDGE_PADDING ||
+                y < EDGE_PADDING ||
+                x + width > TankClient.GAME_WIDTH - EDGE_PADDING ||
+                y + height > TankClient.GAME_HEIGHT - EDGE_PADDING;
+    }
+
+    /**
+     * Finds a valid position for a new wall
+     */
+    private Point findValidWallPosition(int width, int height) {
+        for (int i = 0; i < MAX_POSITION_ATTEMPTS; i++) {
+            int x = random.nextInt(TankClient.GAME_WIDTH - WallManager.MAX_WALL_LENGTH);
+            int y = random.nextInt(TankClient.GAME_HEIGHT - WallManager.MAX_WALL_LENGTH);
+
+            if (!wouldOverlap(x, y, width, height)) {
+                return new Point(x, y);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generates random walls
+     */
+    public void generateRandomWalls(int count) {
+        int successfulPlacements = 0;
+        int maxAttempts = count * 2;
+        int attempts = 0;
+
+        while (successfulPlacements < count && attempts < maxAttempts) {
+            attempts++;
+
+            // Generate wall dimensions
+            boolean isVertical = random.nextBoolean();
+            int width = isVertical ? WallManager.MIN_WALL_THICKNESS :
+                    random.nextInt(WallManager.MAX_WALL_LENGTH - WallManager.MIN_WALL_LENGTH) + WallManager.MIN_WALL_LENGTH;
+            int height = isVertical ?
+                    random.nextInt(WallManager.MAX_WALL_LENGTH - WallManager.MIN_WALL_LENGTH) + WallManager.MIN_WALL_LENGTH :
+                    WallManager.MIN_WALL_THICKNESS;
+
+            Point position = findValidWallPosition(width, height);
+            if (position == null) continue;
+
+            createRandomWall(position.x, position.y, width, height);
+            successfulPlacements++;
+        }
+    }
+
+    /**
+     * Creates a random wall based on probability distribution
+     */
+    private void createRandomWall(int x, int y, int width, int height) {
+        int rand = random.nextInt(100);
+        if (rand < PERMANENT_WALL_CHANCE) {
+            wallManager.addPermanentWall(x, y, width, height);
+        } else if (rand < PERMANENT_WALL_CHANCE + BREAKABLE_WALL_CHANCE) {
+            wallManager.addBreakableWall(x, y, width, height);
+        } else if (rand < PERMANENT_WALL_CHANCE + BREAKABLE_WALL_CHANCE + FORTIFIED_WALL_CHANCE) {
+            wallManager.addFortifiedWall(x, y, width, height);
+        } else {
+            wallManager.addTemporaryWall(x, y, width, height);
+        }
+    }
+
+    /**
+     * Generates the default wall layout
+     */
+    public void generateDefaultLayout() {
+        // Central cross formation
+        wallManager.addPermanentWall(TankClient.GAME_WIDTH/2 - 150, TankClient.GAME_HEIGHT/2, 300, 20);
+        wallManager.addPermanentWall(TankClient.GAME_WIDTH/2, TankClient.GAME_HEIGHT/2 - 150, 20, 300);
+
+        // Corner fortifications
+        wallManager.addFortifiedWall(100, 100, 100, 20);
+        wallManager.addFortifiedWall(TankClient.GAME_WIDTH - 200, 100, 100, 20);
+        wallManager.addFortifiedWall(100, TankClient.GAME_HEIGHT - 120, 100, 20);
+        wallManager.addFortifiedWall(TankClient.GAME_WIDTH - 200, TankClient.GAME_HEIGHT - 120, 100, 20);
+
+        // Breakable walls
+        wallManager.addBreakableWall(250, 200, 20, 100);
+        wallManager.addBreakableWall(TankClient.GAME_WIDTH - 270, 200, 20, 100);
+
+        // Temporary walls
+        wallManager.addTemporaryWall(TankClient.GAME_WIDTH/2 - 100, 150, 200, 20);
     }
 }

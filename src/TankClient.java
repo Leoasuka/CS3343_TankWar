@@ -20,6 +20,8 @@ public class TankClient extends Frame {
 	// Add WallManager instance
 	private final WallManager wallManager;
 
+	private final TankGenerator tankGenerator;
+
 	// Game object collections
 	private final List<Explode> explosions = new ArrayList<>();
 	private final List<Missile> missiles = new ArrayList<>();
@@ -32,9 +34,15 @@ public class TankClient extends Frame {
 	private final Blood healthPack = new Blood();
 
 	public TankClient() {
+		// First create wall manager and generate walls
 		wallManager = new WallManager(this);
 		wallManager.generateRandomWalls(5);
+
+		// Then create tank generator and initialize tanks
+		tankGenerator = new TankGenerator(this);
 	}
+
+
 
 	/**
 	 * Renders the game state
@@ -82,10 +90,8 @@ public class TankClient extends Frame {
 	 * Spawns enemy tanks when needed
 	 */
 	private void spawnEnemyTanks() {
-		if(enemyTanks.isEmpty()) {
-			for(int i = 0; i < 5; i++) {
-				enemyTanks.add(new Tank(50 + 40*(i+1), 50, false, Tank.Direction.D, this));
-			}
+		if (enemyTanks.isEmpty()) {
+			tankGenerator.spawnEnemyTanks(5);
 		}
 	}
 
@@ -228,6 +234,3 @@ public class TankClient extends Frame {
 		return enemyTanks;
 	}
 }
-
-
-

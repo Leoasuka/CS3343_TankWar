@@ -582,3 +582,104 @@ public class Tank {
 	public void setBarrelDirection(Direction dir) { this.barrelDirection = dir; }
 	public void setMovementDirection(Direction dir) { this.moveDirection = dir; }
 }
+
+/**
+ * TankGenerator Class - Handles tank spawning logic and positioning
+ * Ensures tanks spawn in valid positions without overlapping walls or other tanks
+ */
+class TankGenerator {
+	private final TankClient gameClient;
+	private final Random random = new Random();
+
+	// Constants for spawn settings
+	private static final int SPAWN_PADDING = 50;  // Minimum distance from edges
+	private static final int MAX_SPAWN_ATTEMPTS = 50;  // Maximum attempts to find valid position
+
+	public TankGenerator(TankClient gameClient) {
+		this.gameClient = gameClient;
+	}
+
+	/**
+	 * Checks if position is valid for tank spawn
+	 */
+	private boolean isValidSpawnPosition(int x, int y) {
+		// Create bounds for potential tank position
+		Rectangle tankBounds = new Rectangle(x, y, Tank.TANK_WIDTH, Tank.TANK_HEIGHT);
+
+		// Add padding around tank
+		Rectangle paddedBounds = new Rectangle(
+				x - SPAWN_PADDING/2,
+				y - SPAWN_PADDING/2,
+				Tank.TANK_WIDTH + SPAWN_PADDING,
+				Tank.TANK_HEIGHT + SPAWN_PADDING
+		);
+
+		// Check collision with walls
+		for (Wall wall : gameClient.getWalls()) {
+			if (paddedBounds.intersects(wall.getCollisionBounds())) {
+				return false;
+			}
+		}
+
+		// Check collision with existing tanks
+		for (Tank tank : gameClient.getEnemyTanks()) {
+			if (paddedBounds.intersects(tank.getCollisionBounds())) {
+				return false;
+			}
+		}
+
+		// Check collision with player tank
+		if (paddedBounds.intersects(gameClient.getPlayerTank().getCollisionBounds())) {
+			return false;
+		}
+
+		// Check if too close to screen edges
+		return !(x < SPAWN_PADDING ||
+				y < SPAWN_PADDING ||
+				x + Tank.TANK_WIDTH > TankClient.GAME_WIDTH - SPAWN_PADDING ||
+				y + Tank.TANK_HEIGHT > TankClient.GAME_HEIGHT - SPAWN_PADDING);
+	}
+
+	/**
+	 * Finds a valid spawn position for a tank
+	 * @return Point representing valid spawn position, or null if none found
+	 */
+	private Point findValidSpawnPosition() {
+		for (int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS; attempt++) {
+			int x = random.nextInt(TankClient.GAME_WIDTH - Tank.TANK_WIDTH - SPAWN_PADDING * 2) + SPAWN_PADDING;
+			int y = random.nextInt(TankClient.GAME_HEIGHT - Tank.TANK_HEIGHT - SPAWN_PADDING * 2) + SPAWN_PADDING;
+
+			if (isValidSpawnPosition(x, y)) {
+				return new Point(x, y);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Spawns enemy tanks in valid positions
+	 * @param count Number of tanks to spawn
+	 * @return Number of successfully spawned tanks
+	 */
+	public int spawnEnemyTanks(int count) {
+		int successfulSpawns = 0;
+		List<Tank> enemyTanks = gameClient.getEnemyTanks();
+
+		// Clear existing tanks
+		enemyTanks.clear();
+
+		// Try to spawn new tanks
+		for (int i = 0; i < count; i++) {
+			Point spawnPoint = findValidSpawnPosition();
+			if (spawnPoint != null) {
+				Tank.Direction randomDirection = Tank.Direction.values()[
+						random.nextInt(Tank.Direction.values().length - 1)  // Exclude STOP
+						];
+				enemyTanks.add(new Tank(spawnPoint.x, spawnPoint.y, false, randomDirection, gameClient));
+				successfulSpawns++;
+			}
+		}
+
+		return successfulSpawns;
+	}
+}

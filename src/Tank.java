@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.util.*;
 import java.util.List;
 
@@ -278,51 +279,56 @@ public class Tank {
 
 		// Set barrel dimensions
 		int barrelLength = 30;
-		int barrelWidth = 8;  // Width of the barrel
+		int barrelWidth = 8;
 
-		// Draw thicker barrel based on direction
+		Graphics2D g2d = (Graphics2D)graphics;
+		// Store the original transform
+		AffineTransform oldTransform = g2d.getTransform();
+
 		switch(barrelDirection) {
 			case L:
-				graphics.fillRect(centerX - barrelLength, centerY - barrelWidth/2,
-						barrelLength, barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(Math.PI);
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case LU:
-				int dx = (int)(barrelLength * 0.707);
-				int dy = (int)(barrelLength * 0.707);
-				graphics.fillRect(centerX - dx, centerY - dy - barrelWidth/2,
-						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(-3 * Math.PI/4);  // -135 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case U:
-				graphics.fillRect(centerX - barrelWidth/2, centerY - barrelLength,
-						barrelWidth, barrelLength);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(-Math.PI/2);  // -90 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case RU:
-				dx = (int)(barrelLength * 0.707);
-				dy = (int)(barrelLength * 0.707);
-				graphics.fillRect(centerX, centerY - dy - barrelWidth/2,
-						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(-Math.PI/4);  // -45 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case R:
-				graphics.fillRect(centerX, centerY - barrelWidth/2,
-						barrelLength, barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case RD:
-				dx = (int)(barrelLength * 0.707);
-				dy = (int)(barrelLength * 0.707);
-				graphics.fillRect(centerX, centerY + dy - barrelWidth/2,
-						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(Math.PI/4);  // 45 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case D:
-				graphics.fillRect(centerX - barrelWidth/2, centerY,
-						barrelWidth, barrelLength);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(Math.PI/2);  // 90 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 			case LD:
-				dx = (int)(barrelLength * 0.707);
-				dy = (int)(barrelLength * 0.707);
-				graphics.fillRect(centerX - dx, centerY + dy - barrelWidth/2,
-						(int)(Math.sqrt(2) * barrelLength), barrelWidth);
+				g2d.translate(centerX, centerY);
+				g2d.rotate(3 * Math.PI/4);  // 135 degrees
+				g2d.fillRect(0, -barrelWidth/2, barrelLength, barrelWidth);
 				break;
 		}
+
+		// Restore the original transform
+		g2d.setTransform(oldTransform);
 	}
 
 	/**

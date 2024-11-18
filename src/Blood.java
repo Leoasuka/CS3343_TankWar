@@ -92,4 +92,11 @@ public class Blood {
     public void setActive(boolean status) {
         this.isActive = status;
     }
+
+    // // if health <=0
+    // public void checkHealth(Tank playerTank) {
+    //     if (playerTank.getHealthPoints() <= 0) {
+    //         gameClient.setGameState(TankClient.GameState.GAME_OVER);
+    //     }
+    // }
 }

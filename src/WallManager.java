@@ -132,30 +132,6 @@ public class WallManager {
      * Generates random walls in the game area
      * @param count Number of walls to generate
      */
-    /*public void generateRandomWalls(int count) {
-        for (int i = 0; i < count; i++) {
-            int x = random.nextInt(TankClient.GAME_WIDTH - MAX_WALL_LENGTH);
-            int y = random.nextInt(TankClient.GAME_HEIGHT - MAX_WALL_LENGTH);
-            int width = random.nextInt(MAX_WALL_LENGTH - MIN_WALL_LENGTH) + MIN_WALL_LENGTH;
-            int height = MIN_WALL_THICKNESS;
-
-            // Randomly choose wall type
-            switch (random.nextInt(4)) {
-                case 0:
-                    addPermanentWall(x, y, width, height);
-                    break;
-                case 1:
-                    addBreakableWall(x, y, width, height);
-                    break;
-                case 2:
-                    addFortifiedWall(x, y, width, height);
-                    break;
-                case 3:
-                    addTemporaryWall(x, y, width, height);
-                    break;
-            }
-        }
-    }*/
 
     /**
      * Gets all walls for collision detection
@@ -170,27 +146,42 @@ public class WallManager {
     }
 
     /**
-     * Handles missile collision with walls
-     * @param missile Missile to check collision with
+     * Generic collision handler for game objects
+     * @param gameObject Object to check collision with walls
+     * @param <T> Type of game object (Missile or Tank)
      * @return true if collision occurred
      */
-    public boolean handleMissileCollision(Missile missile) {
-        if (missile == null) return false;
+    private <T> boolean handleCollisionWithWalls(T gameObject) {
+        if (gameObject == null) return false;
+
         for (Wall wall : getAllWalls()) {
-            if (wall != null && wall.handleMissileCollision(missile)) {
-                return true;
+            if (wall == null) continue;
+
+            if (gameObject instanceof Missile) {
+                if (wall.handleMissileCollision((Missile)gameObject)) {
+                    return true;
+                }
+            } else if (gameObject instanceof Tank) {
+                if (((Tank)gameObject).handleWallCollision(wall)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
+    /**
+     * Handle missile collision with walls
+     */
+    public boolean handleMissileCollision(Missile missile) {
+        return handleCollisionWithWalls(missile);
+    }
+
+    /**
+     * Handle tank collision with walls
+     */
     public void handleTankCollision(Tank tank) {
-        if (tank == null) return;
-        for (Wall wall : getAllWalls()) {
-            if (wall != null && tank.handleWallCollision(wall)) {
-                return;
-            }
-        }
+        handleCollisionWithWalls(tank);
     }
 }
 

@@ -37,32 +37,51 @@ public class Explode {
 	}
 
 	/**
-	 * Renders and updates the explosion animation
-	 * Removes the explosion when animation completes
-	 * @param graphics Graphics context for rendering
+	 * Check explosion state
+	 * @return whether to continue rendering
 	 */
-	public void renderExplosion(Graphics graphics) {
-		// Remove explosion if it's no longer active
+	private boolean checkExplosionState() {
 		if(!isActive) {
 			gameClient.getExplosions().remove(this);
-			return;
+			return false;
 		}
 
-		// Check if animation sequence is complete
 		if(animationFrame == explosionSizes.length) {
 			isActive = false;
 			animationFrame = 0;
-			return;
+			return false;
 		}
+		return true;
+	}
 
-		// Draw current explosion frame
+	/**
+	 * Draw current explosion frame
+	 * @param graphics Graphics context
+	 */
+	private void drawExplosionFrame(Graphics graphics) {
 		Color originalColor = graphics.getColor();
 		graphics.setColor(Color.ORANGE);
 		int currentSize = explosionSizes[animationFrame];
 		graphics.fillOval(positionX, positionY, currentSize, currentSize);
 		graphics.setColor(originalColor);
+	}
 
-		// Advance to next animation frame
+	/**
+	 * Update animation state
+	 */
+	private void updateAnimation() {
 		animationFrame++;
+	}
+
+	/**
+	 * Render and update explosion animation
+	 * @param graphics Graphics context
+	 */
+	public void renderExplosion(Graphics graphics) {
+		if(!checkExplosionState()) {
+			return;
+		}
+		drawExplosionFrame(graphics);
+		updateAnimation();
 	}
 }

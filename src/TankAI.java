@@ -58,14 +58,7 @@ public class TankAI {
         decideToShoot(distance);
     }
 
-    /**
-     * Calculates distance to player tank
-     */
-    private double calculateDistance(Tank playerTank) {
-        int dx = playerTank.getPositionX() - controlledTank.getPositionX();
-        int dy = playerTank.getPositionY() - controlledTank.getPositionY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
+
 
     /**
      * Updates tank's barrel direction to face player
@@ -168,12 +161,15 @@ public class TankAI {
      */
     private double evaluateCoverPosition(Point position, Wall wall) {
         Tank playerTank = gameClient.getPlayerTank();
-        double distanceToPlayer = calculateDistance(position.x, position.y,
+        double distanceToPlayer = DistanceCalculator.calculate(position.x, position.y,
                 playerTank.getPositionX(), playerTank.getPositionY());
 
-        double distanceToWall = calculateDistance(position.x, position.y,
+        Point wallCenter = new Point(
                 wall.getPositionX() + wall.getWidth()/2,
                 wall.getPositionY() + wall.getHeight()/2);
+        double distanceToWall = DistanceCalculator.calculate(
+                position.x, position.y,
+                wallCenter.x, wallCenter.y);
 
         // Factors to consider:
         // 1. Is position behind wall relative to player?
@@ -198,12 +194,44 @@ public class TankAI {
     }
 
     /**
-     * Calculates distance between two points
+     * Utility class for distance calculations
      */
-    private double calculateDistance(int x1, int y1, int x2, int y2) {
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        return Math.sqrt(dx * dx + dy * dy);
+    private static class DistanceCalculator {
+        /**
+         * Calculate distance between two points
+         */
+        public static double calculate(int x1, int y1, int x2, int y2) {
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        /**
+         * Calculate distance between tank and target point
+         */
+        public static double calculate(Tank tank, int targetX, int targetY) {
+            return calculate(tank.getPositionX(), tank.getPositionY(), targetX, targetY);
+        }
+
+        /**
+         * Calculate distance between two tanks
+         */
+        public static double calculate(Tank tank1, Tank tank2) {
+            return calculate(tank1.getPositionX(), tank1.getPositionY(),
+                    tank2.getPositionX(), tank2.getPositionY());
+        }
+
+        /**
+         * Calculate distance between tank and wall
+         */
+        public static double calculate(Tank tank, Wall wall) {
+            return calculate(tank.getPositionX(), tank.getPositionY(),
+                    wall.getPositionX(), wall.getPositionY());
+        }
+    }
+
+    private double calculateDistance(Tank playerTank) {
+        return DistanceCalculator.calculate(controlledTank, playerTank);
     }
 
     /**
@@ -280,7 +308,7 @@ public class TankAI {
         }
 
         // Consider distance to player
-        double distance = calculateDistance(
+        double distance = DistanceCalculator.calculate(
                 position.x, position.y,
                 playerTank.getPositionX(),
                 playerTank.getPositionY()
@@ -330,7 +358,7 @@ public class TankAI {
         double minDistance = Double.MAX_VALUE;
 
         for (Wall wall : walls) {
-            double distance = calculateDistanceToWall(wall);
+            double distance = DistanceCalculator.calculate(controlledTank, wall);
             if (distance < minDistance) {
                 minDistance = distance;
                 nearest = wall;
@@ -339,16 +367,7 @@ public class TankAI {
         return nearest;
     }
 
-    /**
-     * Calculates distance between tank and wall
-     * @param wall Wall to calculate distance to
-     * @return Distance to wall
-     */
-    private double calculateDistanceToWall(Wall wall) {
-        int dx = wall.getPositionX() - controlledTank.getPositionX();
-        int dy = wall.getPositionY() - controlledTank.getPositionY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
+
 
     /**
      * Moves tank towards a specific position

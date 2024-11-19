@@ -43,10 +43,10 @@ public class Explode {
 	 */
 	public void renderExplosion(Graphics graphics) {
 		// Remove explosion if it's no longer active
-		if(!isActive) {
-			gameClient.getExplosions().remove(this);
-			return;
-		}
+		// if(!isActive) {
+		// 	gameClient.getExplosions().remove(this);
+		// 	return;
+		// }
 
 		// Check if animation sequence is complete
 		if(animationFrame == explosionSizes.length) {

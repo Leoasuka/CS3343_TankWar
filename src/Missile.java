@@ -165,12 +165,13 @@ public class Missile {
 			} else {
 				// Destroy enemy tank immediately
 				tank.setAlive(false);
+				Explode explosion = new Explode(positionX, positionY, gameClient);
+			    gameClient.getExplosions().add(explosion);
 			}
 
 			// Deactivate missile and create explosion
 			this.isActive = false;
-			Explode explosion = new Explode(positionX, positionY, gameClient);
-			gameClient.getExplosions().add(explosion);
+			
 			return true;
 		}
 		return false;

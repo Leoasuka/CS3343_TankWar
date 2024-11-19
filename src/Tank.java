@@ -400,7 +400,7 @@ public class Tank {
 	public void handleKeyReleased(KeyEvent event) {
 		int keyCode = event.getKeyCode();
 		switch(keyCode) {
-			case KeyEvent.VK_CONTROL:
+			case KeyEvent.VK_SPACE:
 				fireMissile();
 				break;
 			case KeyEvent.VK_LEFT:
@@ -524,6 +524,10 @@ public class Tank {
 	 */
 	public void setHealthPoints(int points) {
 		this.healthPoints = points;
+		if (this.healthPoints <= 0 && this.isPlayerTank) {
+            gameClient.setGameState(TankClient.GameState.GAME_OVER);
+			gameClient.setScore(gameClient.getExplosions().size());
+        }
 	}
 
 	/**

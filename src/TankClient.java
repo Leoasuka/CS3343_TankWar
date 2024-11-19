@@ -1,6 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
 import java.util.ArrayList;
 
 /**
@@ -15,7 +19,7 @@ public class TankClient extends Frame {
 	public static final int GAME_HEIGHT = 600;
 
 	// Player tank instance
-	private final Tank playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+	private Tank playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
 
 	// Add WallManager instance
 	private final WallManager wallManager;
@@ -33,6 +37,64 @@ public class TankClient extends Frame {
 	// Health power-up
 	private final Blood healthPack = new Blood();
 
+	//gameover state button
+	private JButton playAgainButton;
+    private JButton quitButton;
+
+    public void initGameOverButtons() {
+        playAgainButton = new JButton("Play Again");
+        playAgainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                restartGame();
+            }
+        });
+
+        quitButton = new JButton("Quit");
+        quitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        // 将按钮添加到窗口的南边（底部）
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(playAgainButton);
+        buttonPanel.add(quitButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+		// 初始化时隐藏按钮
+		playAgainButton.setVisible(false);
+		quitButton.setVisible(false);
+
+		validate(); // 重新验证布局
+        repaint(); // 重新绘制窗口
+    }
+
+	//gameState gameover/running
+	enum GameState { RUNNING, GAME_OVER }
+    private GameState gameState = GameState.RUNNING;
+    private int score = explosions.size()*10;
+
+
+    public void setGameState(GameState state) {
+        this.gameState = state;
+    }
+
+    public GameState getGameState() {
+        return gameState;
+    }
+    
+	public void setScore(int number){
+		this.score = number*10;
+	}
+    
+
+    public int getScore() {
+        return score;
+    }
+
 	public TankClient() {
 		// First create wall manager and generate walls
 		wallManager = new WallManager(this);
@@ -40,6 +102,25 @@ public class TankClient extends Frame {
 
 		// Then create tank generator and initialize tanks
 		tankGenerator = new TankGenerator(this);
+		//initGameOverButtons();
+
+		 // 设置布局和其他窗口属性
+		 setLayout(new BorderLayout());
+		 setSize(GAME_WIDTH, GAME_HEIGHT);
+		 setTitle("Tank War");
+		 setResizable(false);
+		 setBackground(new Color(189, 174, 174));
+	 
+		 // 窗口事件处理
+		 addWindowListener(new WindowAdapter() {
+			 public void windowClosing(WindowEvent e) {
+				 System.exit(0);
+			 }
+		 });
+		 addKeyListener(new KeyMonitor());
+	 
+		 setVisible(true);
+		 new Thread(new PaintThread()).start();
 	}
 
 
@@ -49,7 +130,10 @@ public class TankClient extends Frame {
 	 * @param graphics Graphics context for rendering
 	 */
 	public void paint(Graphics graphics) {
-		// Draw game statistics
+		if (gameState == GameState.GAME_OVER) {
+            renderGameOver(graphics);
+        } else {
+            // Draw game statistics
 		drawGameStats(graphics);
 
 		// Spawn enemy tanks if needed
@@ -73,6 +157,8 @@ public class TankClient extends Frame {
 		// Update and render walls
 		wallManager.update(System.currentTimeMillis());
 		wallManager.render(graphics);
+        }
+		
 	}
 
 	/**
@@ -178,6 +264,53 @@ public class TankClient extends Frame {
 		// Finally make window visible and start game loop
 		setVisible(true);
 		new Thread(new PaintThread()).start();
+	}
+
+	/**
+	 * load game over
+	 */
+	private void renderGameOver(Graphics g) {
+		// Set color to red for the "GAME OVER" text
+		g.setColor(Color.RED);
+		g.setFont(new Font("Arial", Font.BOLD, 50));
+		g.drawString("GAME OVER", 100, 200);
+	
+		// Set font and draw the score
+		g.setFont(new Font("Arial", Font.PLAIN, 30));
+		g.drawString("Score: " + score, 100, 250);
+	
+		// 如果按钮还没有被添加，则添加它们
+        // if (playAgainButton == null || quitButton == null) {
+        //     initGameOverButtons();
+        // }
+		initGameOverButtons();
+        playAgainButton.setVisible(true);
+        quitButton.setVisible(true);
+	}
+	
+	private void restartGame() {
+		playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+		addKeyListener(new KeyMonitor());
+		// Remove all components from the frame
+        enemyTanks.clear();
+        tankGenerator.spawnEnemyTanks(5);
+        missiles.clear();
+        explosions.clear();
+        score = 0; 
+
+        
+        if (getComponentCount() > 0) {
+			remove(getComponent(0));
+		}
+	
+		// Set game state to running
+		setGameState(GameState.RUNNING);
+		this.removeAll();
+		this.setGameState(GameState.RUNNING);
+		// Reset game state and data
+		// For example: reinitialize tanks and other game objects
+		validate(); // 重新验证布局
+		repaint(); // 重新绘制窗口
 	}
 
 	/**

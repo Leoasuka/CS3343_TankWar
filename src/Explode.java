@@ -1,5 +1,4 @@
 import java.awt.*;
-
 /**
  * Explode Class - Represents an explosion animation in the tank game
  * Creates a dynamic explosion effect using circles of varying sizes

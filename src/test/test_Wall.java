@@ -1,5 +1,8 @@
 package test;
 
+import src.Tank;
+import src.TankClient;
+import src.Wall;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +12,7 @@ import java.text.AttributedCharacterIterator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class WallTest {
+class test_Wall {
     private Wall wall;
     private TankClient mockClient;
     private Tank tank;

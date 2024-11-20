@@ -1,12 +1,10 @@
-package test;
+package Test;
 
-import src.Explode;
-import src.TankClient;
+import Resources.Explode;
+import Resources.TankClient;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;

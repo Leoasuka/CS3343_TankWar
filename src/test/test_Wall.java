@@ -1,8 +1,9 @@
-package test;
+package Test;
 
-import src.Tank;
-import src.TankClient;
-import src.Wall;
+import Resources.Missile;
+import Resources.Tank;
+import Resources.TankClient;
+import Resources.Wall;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

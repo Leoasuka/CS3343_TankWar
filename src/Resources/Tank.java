@@ -1,3 +1,4 @@
+package Resources;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
@@ -44,7 +45,7 @@ public class Tank {
 	/**
 	 * Enum defining all possible movement directions
 	 */
-	enum Direction {L, LU, U, RU, R, RD, D, LD, STOP}
+	public enum Direction {L, LU, U, RU, R, RD, D, LD, STOP}
 
 	// Current movement and barrel direction
 	private Direction moveDirection = Direction.STOP;

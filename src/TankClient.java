@@ -289,28 +289,37 @@ public class TankClient extends Frame {
 	}
 	
 	private void restartGame() {
-		playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
-		addKeyListener(new KeyMonitor());
-		// Remove all components from the frame
-        enemyTanks.clear();
-        tankGenerator.spawnEnemyTanks(5);
-        missiles.clear();
-        explosions.clear();
-        score = 0; 
+	    // Reset player tank
+	    playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+	    
+	    // Clear enemy tanks, missiles, and explosions
+	    enemyTanks.clear();
+	    missiles.clear();
+	    explosions.clear();
+	    
+	    // Spawn new enemy tanks
+	    tankGenerator.spawnEnemyTanks(5);
+	    
+	    // Reset score
+	    score = 0; 
 
-        
-        if (getComponentCount() > 0) {
-			remove(getComponent(0));
-		}
-	
-		// Set game state to running
-		setGameState(GameState.RUNNING);
-		this.removeAll();
-		this.setGameState(GameState.RUNNING);
-		// Reset game state and data
-		// For example: reinitialize tanks and other game objects
-		validate(); // 重新验证布局
-		repaint(); // 重新绘制窗口
+	    // Reset game state to RUNNING
+	    setGameState(GameState.RUNNING);
+	    
+	    // Remove any existing key listeners
+	    for (KeyListener kl : getKeyListeners()) {
+	        removeKeyListener(kl);
+	    }
+	    
+	    // Add a new key listener
+	    addKeyListener(new KeyMonitor());
+	    
+	    // Make sure the frame is focused and ready to receive key events
+	    requestFocusInWindow();
+
+	    // Repaint and validate the window
+	    validate(); 
+	    repaint();
 	}
 
 	/**

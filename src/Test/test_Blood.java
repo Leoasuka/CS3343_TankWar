@@ -20,7 +20,7 @@ class BloodTest {
 
     @Test
     void testBloodInitialization() {
-        // 测试初始位置是否正确 (350, 300)
+        // test for the initial position (350, 300)
         Rectangle bounds = blood.getCollisionBounds();
         assertEquals(350, bounds.x);
         assertEquals(300, bounds.y);
@@ -31,13 +31,13 @@ class BloodTest {
 
     @Test
     void testRenderHealthPack() {
-        // 保存原始颜色
+        // test for the original colour
         Color originalColor = Color.BLACK;
         when(mockGraphics.getColor()).thenReturn(originalColor);
 
         blood.renderHealthPack(mockGraphics);
 
-        // 验证绘图方法调用
+        // test for the usage of graphics
         verify(mockGraphics).setColor(Color.MAGENTA);
         verify(mockGraphics).fillRect(anyInt(), anyInt(), eq(15), eq(15));
         verify(mockGraphics).setColor(originalColor);
@@ -48,32 +48,32 @@ class BloodTest {
         blood.setActive(false);
         blood.renderHealthPack(mockGraphics);
 
-        // 验证当血包不活跃时不会调用任何绘图方法
+        // test for no graphics when no health pack is activated
         verify(mockGraphics, never()).setColor(any(Color.class));
         verify(mockGraphics, never()).fillRect(anyInt(), anyInt(), anyInt(), anyInt());
     }
 
     @Test
     void testUpdatePosition() {
-        // 触发位置更新，移动到第二个位置 (360, 300)
+        // test for updating position (360, 300)
         blood.renderHealthPack(mockGraphics);
 
         Rectangle newBounds = blood.getCollisionBounds();
-        // 验证新位置是路径中的第二个点
+        // test for the new position sequences
         assertEquals(360, newBounds.x);
         assertEquals(300, newBounds.y);
     }
 
     @Test
     void testCompletePathCycle() {
-        // 测试完整路径循环
-        // 路径长度是7，所以循环7次后应该回到起点
+        // test for the complete loop
+        // path lenghth of 7, after the loop return to the starting position.
         for (int i = 0; i < 7; i++) {
             blood.renderHealthPack(mockGraphics);
         }
 
         Rectangle bounds = blood.getCollisionBounds();
-        // 验证回到起始位置 (350, 300)
+        // test for returning to the starting position (350, 300)
         assertEquals(350, bounds.x);
         assertEquals(300, bounds.y);
     }
@@ -93,11 +93,11 @@ class BloodTest {
     void testCollisionBoundsAccuracy() {
         Rectangle bounds = blood.getCollisionBounds();
 
-        // 验证碰撞箱大小
+        // test the collision bondaries
         assertEquals(15, bounds.width);
         assertEquals(15, bounds.height);
 
-        // 验证位置
+        // position test.
         assertTrue(bounds.x >= 0);
         assertTrue(bounds.y >= 0);
     }

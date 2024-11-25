@@ -42,36 +42,6 @@ public class TankClient extends Frame {
 	private JButton playAgainButton;
     private JButton quitButton;
 
-    public void initGameOverButtons() {
-        playAgainButton = new JButton("Play Again");
-        playAgainButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                restartGame();
-            }
-        });
-
-        quitButton = new JButton("Quit");
-        quitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        // 将按钮添加到窗口的南边（底部）
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.add(playAgainButton);
-        buttonPanel.add(quitButton);
-        add(buttonPanel, BorderLayout.SOUTH);
-
-		// 初始化时隐藏按钮
-		playAgainButton.setVisible(false);
-		quitButton.setVisible(false);
-
-		validate(); // 重新验证布局
-        repaint(); // 重新绘制窗口
-    }
 
 	//gameState gameover/running
 	enum GameState { RUNNING, GAME_OVER }
@@ -280,13 +250,29 @@ public class TankClient extends Frame {
 		g.setFont(new Font("Arial", Font.PLAIN, 30));
 		g.drawString("Score: " + score, 100, 250);
 	
-		// 如果按钮还没有被添加，则添加它们
-        // if (playAgainButton == null || quitButton == null) {
-        //     initGameOverButtons();
-        // }
-		initGameOverButtons();
-        playAgainButton.setVisible(true);
-        quitButton.setVisible(true);
+        playAgainButton = new JButton("Play Again");
+        playAgainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                restartGame();
+            }
+        });
+
+        quitButton = new JButton("Quit");
+        quitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        // 将按钮添加到窗口的南边（底部）
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(playAgainButton);
+        buttonPanel.add(quitButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+		validate(); // 重新验证布局
+
 	}
 	
 	private void restartGame() {

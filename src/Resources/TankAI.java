@@ -134,24 +134,20 @@ public class TankAI {
 
     /**
      * Seeks and moves towards the safest cover position
-     * 寻找并移动到最安全的掩护位置
      */
     private void seekSafestCover() {
         Point bestPosition = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
         // Iterate through all walls to find best cover position
-        // 遍历所有墙壁以找到最佳掩护位置
         for (Wall wall : gameClient.getWalls()) {
             Point[] coverPositions = wall.getCoverPositions();
 
             // Evaluate each possible cover position
-            // 评估每个可能的掩护位置
             for (Point pos : coverPositions) {
                 double score = evaluateCoverPosition(pos, wall);
 
                 // Update if better position found
-                // 如果找到更好的位置则更新
                 if (score > bestScore && isPositionAccessible(pos)) {
                     bestScore = score;
                     bestPosition = pos;
@@ -160,30 +156,25 @@ public class TankAI {
         }
 
         // Move to the best position if found
-        // 如果找到最佳位置则移动过去
         if (bestPosition != null) {
             moveTowardsPosition(bestPosition.x, bestPosition.y);
         } else {
             // If no good cover found, implement fallback behavior
-            // 如果没找到好的掩护点，执行后备策略
             performEvasiveManeuver();
         }
     }
 
     /**
      * Checks if a position is accessible
-     * 检查位置是否可到达
      */
     private boolean isPositionAccessible(Point position) {
         // Check if position is within game bounds
-        // 检查位置是否在游戏边界内
         if (position.x < 0 || position.x > TankClient.GAME_WIDTH ||
                 position.y < 0 || position.y > TankClient.GAME_HEIGHT) {
             return false;
         }
 
         // Check if position is blocked by other tanks
-        // 检查位置是否被其他坦克阻挡
         Rectangle positionBounds = new Rectangle(
                 position.x - Tank.TANK_WIDTH/2,
                 position.y - Tank.TANK_HEIGHT/2,
@@ -202,24 +193,20 @@ public class TankAI {
 
     /**
      * Performs evasive maneuver when no good cover is found
-     * 当找不到好的掩护点时执行规避机动
      */
     private void performEvasiveManeuver() {
         Tank playerTank = gameClient.getPlayerTank();
 
         // Move in zigzag pattern away from player
-        // 以之字形pattern远离玩家
         double angle = Math.atan2(
                 controlledTank.getPositionY() - playerTank.getPositionY(),
                 controlledTank.getPositionX() - playerTank.getPositionX()
         );
 
         // Add randomization to movement
-        // 添加随机移动
         angle += (Math.random() - 0.5) * Math.PI/4;
 
         // Set new movement direction
-        // 设置新的移动方向
         controlledTank.setMovementDirection(angleToDirection(angle));
     }
 

@@ -10,9 +10,12 @@ import org.mockito.Mockito;
 import java.awt.*;
 import java.util.ArrayList;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 public class test_Explode {
+	
 
     private TankClient mockTankClient;
     private Explode explode;
@@ -31,13 +34,19 @@ public class test_Explode {
 
     @Test
     void testInitialState() {
-        //assertTrue(explode.isActive(), "Explosion should be active upon creation");
+        assertTrue(
+        	"Explosion should be active upon creation",
+        	explode.getStatus()
+        );
     }
 
     @Test
     void testRenderExplosionUpdatesFrame() {
         explode.renderExplosion(mockGraphics);
-        //assertFalse(explode.isActive(), "Explosion should not be active after rendering all frames");
+        assertFalse(
+        	"Explosion should not be active after rendering all frames",
+        	explode.getStatus()
+        );
     }
 
     @Test

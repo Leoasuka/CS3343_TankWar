@@ -35,6 +35,10 @@ public class Explode {
 		this.positionY = posY;
 		this.gameClient = client;
 	}
+	
+	public boolean getStatus() {
+		return this.isActive;
+	}
 
 	/**
 	 * Check explosion state

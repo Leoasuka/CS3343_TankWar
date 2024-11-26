@@ -106,7 +106,7 @@
                 <version>3.1.2</version>
                 <configuration>
                     <includes>
-                        <include>**/*Test.java</include>
+                        <include>**/*test.java</include>
                         <include>**/test_*.java</include>
                     </includes>
                     <properties>
@@ -134,7 +134,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Main.Main</mainClass>
+                            <mainClass>main.main</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>

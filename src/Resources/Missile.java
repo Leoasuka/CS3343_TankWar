@@ -206,4 +206,24 @@ public class Missile {
 		}
 		return false;
 	}
+
+	public int getPositionX() {
+		return positionX;
+	}
+
+	public int getPositionY() {
+		return positionY;
+	}
+
+	public Tank.Direction getDirection() {
+		return direction;
+	}
+
+	public boolean isFromPlayerTank() {
+		return isFromPlayerTank;
+	}
+
+	public TankClient getGameClient() {
+		return gameClient;
+	}
 }

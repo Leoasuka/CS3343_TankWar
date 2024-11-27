@@ -42,6 +42,10 @@ public class Tank {
 	private boolean movingRight = false;
 	private boolean movingDown = false;
 
+	public void setAI(TankAI ai) {
+		this.ai = ai;
+	}
+
 	/**
 	 * Enum defining all possible movement directions
 	 */
@@ -133,7 +137,7 @@ public class Tank {
 	/**
 	 * Updates tank's position based on current direction
 	 */
-	private void updatePosition() {
+    void updatePosition() {
 		if (!isPlayerTank && ai != null) {
 			ai.update();
 		}
@@ -203,7 +207,7 @@ public class Tank {
 	 * @param newY Potential new Y position
 	 * @return true if collision would occur, false otherwise
 	 */
-	private boolean willCollideWithOtherTanks(int newX, int newY) {
+    boolean willCollideWithOtherTanks(int newX, int newY) {
 		Rectangle predictedBounds = new Rectangle(newX, newY, TANK_WIDTH, TANK_HEIGHT);
 
 		List<Tank> allTanks = new ArrayList<>(gameClient.getEnemyTanks());
@@ -228,7 +232,7 @@ public class Tank {
 	 * @param newY Potential new Y position
 	 * @return true if collision would occur, false otherwise
 	 */
-	private boolean willCollideWithWalls(int newX, int newY) {
+    boolean willCollideWithWalls(int newX, int newY) {
 		Rectangle predictedBounds = new Rectangle(newX, newY, TANK_WIDTH, TANK_HEIGHT);
 
 		// Check collision with all walls from WallManager
@@ -243,7 +247,7 @@ public class Tank {
 	/**
 	 * Constrains tank position to game boundaries
 	 */
-	private void constrainToGameBounds() {
+    void constrainToGameBounds() {
 		if(currentX < 0) currentX = 0;
 		if(currentY < 30) currentY = 30;
 		if(currentX + TANK_WIDTH > TankClient.GAME_WIDTH) {
@@ -257,7 +261,7 @@ public class Tank {
 	/**
 	 * Handles AI movement for enemy tanks
 	 */
-	private void handleAIMovement() {
+    void handleAIMovement() {
 		if(!isPlayerTank) {
 			Direction[] directions = Direction.values();
 			if(movementStep == 0) {
@@ -273,7 +277,7 @@ public class Tank {
 		}
 	}
 
-	private void renderBarrel(Graphics graphics) {
+	void renderBarrel(Graphics graphics) {
 		int centerX = currentX + TANK_WIDTH/2;
 		int centerY = currentY + TANK_HEIGHT/2;
 		graphics.setColor(Color.DARK_GRAY);
@@ -619,7 +623,7 @@ class TankGenerator {
 	/**
 	 * Checks if position is valid for tank spawn
 	 */
-	private boolean isValidSpawnPosition(int x, int y) {
+    boolean isValidSpawnPosition(int x, int y) {
 		// Create bounds for potential tank position
 		Rectangle tankBounds = new Rectangle(x, y, Tank.TANK_WIDTH, Tank.TANK_HEIGHT);
 

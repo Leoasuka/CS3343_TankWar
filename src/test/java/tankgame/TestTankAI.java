@@ -1,5 +1,6 @@
 package tankgame;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
@@ -8,6 +9,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TestTankAI {
+
+    private Tank controlledTank;
+    private TankClient gameClient;
+    private Tank playerTank;
+    private TankAI tankAI;
+
+    @BeforeEach
+    void setUp() {
+        // Mock所有依赖
+        controlledTank = mock(Tank.class);
+        gameClient = mock(TankClient.class);
+        playerTank = mock(Tank.class);
+
+        // 创建TankAI实例
+        tankAI = new TankAI(controlledTank, gameClient);
+
+        // 默认设置：玩家坦克存活，AI坦克存活
+        when(playerTank.isAlive()).thenReturn(true);
+        when(controlledTank.isAlive()).thenReturn(true);
+        when(gameClient.getPlayerTank()).thenReturn(playerTank);
+    }
+
     @Test
     void testFindNearestWall() {
         // Create a mock TankClient
@@ -81,30 +104,40 @@ class TestTankAI {
     }
 
     @Test
-    void testDecideToShoot() {
-        // Create a mock TankClient
-        TankClient mockTankClient = mock(TankClient.class);
+    void testNoFireMissile_WhenOutOfRange() {
+        // 距离在射击范围外
+        when(playerTank.getPositionX()).thenReturn(500);
+        when(playerTank.getPositionY()).thenReturn(500);
+        when(controlledTank.getPositionX()).thenReturn(0);
+        when(controlledTank.getPositionY()).thenReturn(0);
 
-        // Create a controlled tank
-        Tank controlledTank = mock(Tank.class);
-        when(controlledTank.isAlive()).thenReturn(true);
-
-        // Create a player tank
-        Tank playerTank = mock(Tank.class);
-        when(playerTank.isAlive()).thenReturn(true);
-        when(mockTankClient.getPlayerTank()).thenReturn(playerTank);
-
-        // Create the TankAI instance
-        TankAI tankAI = new TankAI(controlledTank, mockTankClient);
-
-        // Mock the hasLineOfSight method to return true
+        // 模拟有清晰视线
         TankAI spyTankAI = spy(tankAI);
         doReturn(true).when(spyTankAI).hasLineOfSight(playerTank);
 
-        // Call the decideToShoot method with a distance within shooting range
-        spyTankAI.decideToShoot(100);
+        // 调用方法
+        spyTankAI.decideToShoot(300);
 
-        // Verify that the controlled tank fires a missile
-        verify(controlledTank, atLeastOnce()).fireMissile();
+        // 验证fireMissile未被调用
+        verify(controlledTank, never()).fireMissile();
+    }
+
+    @Test
+    void testNoFireMissile_WhenNoLineOfSight() {
+        // 距离在射击范围内
+        when(playerTank.getPositionX()).thenReturn(100);
+        when(playerTank.getPositionY()).thenReturn(100);
+        when(controlledTank.getPositionX()).thenReturn(0);
+        when(controlledTank.getPositionY()).thenReturn(0);
+
+        // 模拟没有清晰视线
+        TankAI spyTankAI = spy(tankAI);
+        doReturn(false).when(spyTankAI).hasLineOfSight(playerTank);
+
+        // 调用方法
+        spyTankAI.decideToShoot(150);
+
+        // 验证fireMissile未被调用
+        verify(controlledTank, never()).fireMissile();
     }
 }

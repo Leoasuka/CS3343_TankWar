@@ -1,6 +1,5 @@
 package tankgame;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
@@ -10,25 +9,72 @@ import static org.mockito.Mockito.*;
 
 class TestTankAI {
 
-    private Tank controlledTank;
-    private TankClient gameClient;
-    private Tank playerTank;
-    private TankAI tankAI;
+    Object[] setUp() {
+        TankClient mockClient = mock(TankClient.class);
+        Tank controlledTank = mock(Tank.class);
+        Tank playerTank = mock(Tank.class);
 
-    @BeforeEach
-    void setUp() {
-        // Mock所有依赖
-        controlledTank = mock(Tank.class);
-        gameClient = mock(TankClient.class);
-        playerTank = mock(Tank.class);
-
-        // 创建TankAI实例
-        tankAI = new TankAI(controlledTank, gameClient);
-
-        // 默认设置：玩家坦克存活，AI坦克存活
-        when(playerTank.isAlive()).thenReturn(true);
+        when(mockClient.getPlayerTank()).thenReturn(playerTank);
         when(controlledTank.isAlive()).thenReturn(true);
-        when(gameClient.getPlayerTank()).thenReturn(playerTank);
+        when(playerTank.isAlive()).thenReturn(true);
+
+        // 返回创建的对象数组
+        Object[] mocks = {mockClient, controlledTank, playerTank};
+        return mocks;
+    }
+
+    @Test
+    void testConstructor() {
+        Object[] mocks = setUp();
+        TankClient mockClient = (TankClient) mocks[0];
+        Tank controlledTank = (Tank) mocks[1];
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        assertNotNull(tankAI);
+    }
+
+
+    @Test
+    void testUpdate_DeadPlayer() throws InterruptedException {
+        Object[] mocks = setUp();
+        TankClient mockClient = (TankClient) mocks[0];
+        Tank controlledTank = (Tank) mocks[1];
+        Tank playerTank = (Tank) mocks[2];
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        // 设置空walls数组避免NPE
+        Wall[] emptyWalls = new Wall[]{};
+        when(mockClient.getWalls()).thenReturn(emptyWalls);
+
+        Thread.sleep(1100);
+        when(playerTank.isAlive()).thenReturn(false);
+
+        tankAI.update();
+
+        verify(controlledTank, never()).setBarrelDirection(any(Tank.Direction.class));
+    }
+
+    @Test
+    void testUpdate_DeadControlledTank() throws InterruptedException {
+        Object[] mocks = setUp();
+        TankClient mockClient = (TankClient) mocks[0];
+        Tank controlledTank = (Tank) mocks[1];
+        Tank playerTank = (Tank) mocks[2];
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        // 设置空walls数组避免NPE
+        Wall[] emptyWalls = new Wall[]{};
+        when(mockClient.getWalls()).thenReturn(emptyWalls);
+
+        Thread.sleep(1100);
+        when(controlledTank.isAlive()).thenReturn(false);
+
+        tankAI.update();
+
+        verify(controlledTank, never()).setBarrelDirection(any(Tank.Direction.class));
     }
 
     @Test

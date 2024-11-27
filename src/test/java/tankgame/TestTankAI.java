@@ -3,9 +3,15 @@ package tankgame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import main.java.tankgame.Tank;
+import main.java.tankgame.TankAI;
+import main.java.tankgame.TankClient;
+import main.java.tankgame.Wall;
+
 import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TestTankAI {
@@ -173,5 +179,136 @@ class TestTankAI {
 
         // 验证fireMissile未被调用
         verify(controlledTank, never()).fireMissile();
+    }
+    @Test
+    void testSeekTacticalAdvantage_NoWalls() {
+        // Setup
+    	TankAI tankAI = new TankAI(controlledTank, mockClient);
+        when(mockClient.getWalls()).thenReturn(new Wall[]{});
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        // Test
+        tankAI.seekTacticalAdvantage();
+
+        // Since there are no walls, the tank shouldn't move
+        verify(controlledTank, never()).setMovementDirection(any(Tank.Direction.class));
+    }
+
+    @Test
+    void testSeekTacticalAdvantage_WithWalls() {
+        // Create walls with cover positions
+        Wall wall1 = mock(Wall.class);
+        when(wall1.getCoverPositions()).thenReturn(new Point[]{
+            new Point(150, 150)
+        });
+        when(wall1.getPositionX()).thenReturn(140);
+        when(wall1.getPositionY()).thenReturn(140);
+        when(wall1.getCollisionBounds()).thenReturn(new Rectangle(140, 140, 20, 20));
+
+        // Setup game state
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall1});
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+		// Test
+        tankAI.seekTacticalAdvantage();
+
+        // Verify that the tank moves towards the tactical position
+        verify(controlledTank).setMovementDirection(any(Tank.Direction.class));
+    }
+
+    @Test
+    void testHasGoodFiringAngle_NoObstacles() {
+        // Setup
+        Point position = new Point(100, 100);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+        when(mockClient.getWalls()).thenReturn(new Wall[]{});
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        // Test
+        boolean result = tankAI.hasGoodFiringAngle(position, playerTank);
+
+        // Verify
+        assertTrue(result);
+    }
+
+    @Test
+    void testHasGoodFiringAngle_WithObstacle() {
+        // Setup
+        Point position = new Point(100, 100);
+        Wall wall = mock(Wall.class);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(150, 150, 20, 20));
+        
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall});
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        // Test
+        boolean result = tankAI.hasGoodFiringAngle(position, playerTank);
+
+        // Verify
+        assertFalse(result);
+    }
+
+    @Test
+    void testHasGoodFiringAngle_MultipleWalls() {
+        // Setup
+    	TankAI tankAI = new TankAI(controlledTank, mockClient);
+        Point position = new Point(100, 100);
+        Wall wall1 = mock(Wall.class);
+        Wall wall2 = mock(Wall.class);
+        when(wall1.getCollisionBounds()).thenReturn(new Rectangle(80, 80, 20, 20));
+        when(wall2.getCollisionBounds()).thenReturn(new Rectangle(150, 150, 20, 20));
+        
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall1, wall2});
+
+        // Test
+        boolean result = tankAI.hasGoodFiringAngle(position, playerTank);
+
+        // Verify
+        assertFalse(result);
+    }
+
+    @Test
+    void testSeekTacticalAdvantage_BestPositionSelection() {
+        // Create multiple walls with different cover positions
+        Wall wall1 = mock(Wall.class);
+        Wall wall2 = mock(Wall.class);
+        
+        when(wall1.getCoverPositions()).thenReturn(new Point[]{
+            new Point(150, 150)
+        });
+        when(wall2.getCoverPositions()).thenReturn(new Point[]{
+            new Point(180, 180)
+        });
+        
+        when(wall1.getPositionX()).thenReturn(140);
+        when(wall1.getPositionY()).thenReturn(140);
+        when(wall2.getPositionX()).thenReturn(170);
+        when(wall2.getPositionY()).thenReturn(170);
+        
+        when(wall1.getCollisionBounds()).thenReturn(new Rectangle(140, 140, 20, 20));
+        when(wall2.getCollisionBounds()).thenReturn(new Rectangle(170, 170, 20, 20));
+
+        // Setup game state
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall1, wall2});
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        // Test
+        tankAI.seekTacticalAdvantage();
+
+        // Verify that the tank moves towards a position
+        verify(controlledTank).setMovementDirection(any(Tank.Direction.class));
     }
 }

@@ -1,5 +1,6 @@
 package tankgame;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
@@ -9,39 +10,29 @@ import static org.mockito.Mockito.*;
 
 class TestTankAI {
 
-    Object[] setUp() {
-        TankClient mockClient = mock(TankClient.class);
-        Tank controlledTank = mock(Tank.class);
-        Tank playerTank = mock(Tank.class);
+    private TankClient mockClient;
+    private Tank controlledTank;
+    private Tank playerTank;
+
+    @BeforeEach
+    void setUp() {
+        mockClient = mock(TankClient.class);
+        controlledTank = mock(Tank.class);
+        playerTank = mock(Tank.class);
 
         when(mockClient.getPlayerTank()).thenReturn(playerTank);
         when(controlledTank.isAlive()).thenReturn(true);
         when(playerTank.isAlive()).thenReturn(true);
-
-        // 返回创建的对象数组
-        Object[] mocks = {mockClient, controlledTank, playerTank};
-        return mocks;
     }
 
     @Test
     void testConstructor() {
-        Object[] mocks = setUp();
-        TankClient mockClient = (TankClient) mocks[0];
-        Tank controlledTank = (Tank) mocks[1];
-
         TankAI tankAI = new TankAI(controlledTank, mockClient);
-
         assertNotNull(tankAI);
     }
 
-
     @Test
     void testUpdate_DeadPlayer() throws InterruptedException {
-        Object[] mocks = setUp();
-        TankClient mockClient = (TankClient) mocks[0];
-        Tank controlledTank = (Tank) mocks[1];
-        Tank playerTank = (Tank) mocks[2];
-
         TankAI tankAI = new TankAI(controlledTank, mockClient);
 
         // 设置空walls数组避免NPE
@@ -58,11 +49,6 @@ class TestTankAI {
 
     @Test
     void testUpdate_DeadControlledTank() throws InterruptedException {
-        Object[] mocks = setUp();
-        TankClient mockClient = (TankClient) mocks[0];
-        Tank controlledTank = (Tank) mocks[1];
-        Tank playerTank = (Tank) mocks[2];
-
         TankAI tankAI = new TankAI(controlledTank, mockClient);
 
         // 设置空walls数组避免NPE
@@ -151,6 +137,7 @@ class TestTankAI {
 
     @Test
     void testNoFireMissile_WhenOutOfRange() {
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
         // 距离在射击范围外
         when(playerTank.getPositionX()).thenReturn(500);
         when(playerTank.getPositionY()).thenReturn(500);
@@ -170,6 +157,7 @@ class TestTankAI {
 
     @Test
     void testNoFireMissile_WhenNoLineOfSight() {
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
         // 距离在射击范围内
         when(playerTank.getPositionX()).thenReturn(100);
         when(playerTank.getPositionY()).thenReturn(100);

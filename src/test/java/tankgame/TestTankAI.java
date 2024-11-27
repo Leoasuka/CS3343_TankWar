@@ -3,11 +3,6 @@ package tankgame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import main.java.tankgame.Tank;
-import main.java.tankgame.TankAI;
-import main.java.tankgame.TankClient;
-import main.java.tankgame.Wall;
-
 import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.*;

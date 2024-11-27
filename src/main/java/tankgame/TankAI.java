@@ -268,7 +268,7 @@ public class TankAI {
     /**
      * Seeks tactical advantage position
      */
-    private void seekTacticalAdvantage() {
+    void seekTacticalAdvantage() {
         Tank playerTank = gameClient.getPlayerTank();
         Wall[] walls = gameClient.getWalls();
 
@@ -334,7 +334,7 @@ public class TankAI {
                 position.distance(wall.getPositionX(), wall.getPositionY()) < 100;
     }
 
-    private boolean hasGoodFiringAngle(Point position, Tank playerTank) {
+    boolean hasGoodFiringAngle(Point position, Tank playerTank) {
         // Check if position provides clear line of sight to player
         Line2D sightLine = new Line2D.Double(
                 position.x, position.y,

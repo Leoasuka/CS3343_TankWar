@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -67,8 +66,6 @@ class TestTankClient {
         tankClient.paint(graphics);
 
         // Verify that game statistics and game objects are rendered
-        // verify(graphics, times(1)).drawString(contains("Missiles Count:"), eq(10), eq(50));
-        // verify(graphics, times(1)).drawString(contains("Explosions Count:"), eq(10), eq(70));
         verify(graphics, times(1)).drawString(contains("Enemy Tanks Count:"), eq(10), eq(50));
         verify(graphics, times(1)).drawString(contains("Player Health:"), eq(10), eq(70));
         verify(graphics, times(1)).drawString(contains("Score:"), eq(10), eq(90));
@@ -152,8 +149,7 @@ class TestTankClient {
 
         // 创建一个 AWTEventListener 来捕获窗口关闭事件
         Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
-            if (event instanceof WindowEvent) {
-                WindowEvent windowEvent = (WindowEvent) event;
+            if (event instanceof WindowEvent windowEvent) {
                 if (windowEvent.getID() == WindowEvent.WINDOW_CLOSING) {
                     // 验证窗口关闭事件
                     assertEquals(WindowEvent.WINDOW_CLOSING, windowEvent.getID());

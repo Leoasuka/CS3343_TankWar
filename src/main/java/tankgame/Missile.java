@@ -81,7 +81,7 @@ public class Missile {
 	/**
 	 * Updates missile position based on direction
 	 */
-	private void updatePosition() {
+    void updatePosition() {
 		switch(direction) {
 			case L:
 				positionX -= MOVEMENT_SPEED_X;
@@ -214,5 +214,25 @@ public class Missile {
 
 	public int getPositionY() {
 		return positionY;
+	}
+
+	public Tank.Direction getDirection() {
+		return direction;
+	}
+
+	public TankClient getGameClient() {
+		return gameClient;
+	}
+
+	public boolean isFromPlayerTank() {
+		return isFromPlayerTank;
+	}
+
+	public int getSpeed() {
+		return MOVEMENT_SPEED_X;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 }

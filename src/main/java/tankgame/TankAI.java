@@ -295,7 +295,7 @@ public class TankAI {
     /**
      * Evaluates position for tactical advantage
      */
-    private double evaluateTacticalPosition(Point position, Wall wall, Tank playerTank) {
+    double evaluateTacticalPosition(Point position, Wall wall, Tank playerTank) {
         double score = 0;
 
         // Check if position provides partial cover
@@ -322,7 +322,7 @@ public class TankAI {
         return score;
     }
 
-    private boolean hasPartialCover(Point position, Wall wall, Tank playerTank) {
+    boolean hasPartialCover(Point position, Wall wall, Tank playerTank) {
         // Calculate if wall provides some cover but still allows firing
         Line2D sightLine = new Line2D.Double(
                 playerTank.getPositionX(), playerTank.getPositionY(),

@@ -306,4 +306,158 @@ class TestTankAI {
         // Verify that the tank moves towards a position
         verify(controlledTank).setMovementDirection(any(Tank.Direction.class));
     }
+    @Test
+    void testHasPartialCover_WithPartialCover() {
+        // Setup
+        Point position = new Point(150, 150);
+        Wall wall = mock(Wall.class);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        // Test
+        boolean result = tankAI.hasPartialCover(position, wall, playerTank);
+
+        // Verify - position is close to wall but sight line isn't blocked
+        assertTrue(result);
+    }
+
+    @Test
+    void testHasPartialCover_TooFarFromWall() {
+        // Setup
+        Point position = new Point(300, 300);
+        Wall wall = mock(Wall.class);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        // Test
+        boolean result = tankAI.hasPartialCover(position, wall, playerTank);
+
+        // Verify - position is too far from wall
+        assertFalse(result);
+    }
+
+    @Test
+    void testHasPartialCover_BlockedByWall() {
+        // Setup
+        Point position = new Point(90, 90);
+        Wall wall = mock(Wall.class);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        // Test
+        boolean result = tankAI.hasPartialCover(position, wall, playerTank);
+
+        // Verify - sight line is blocked by wall
+        assertFalse(result);
+    }
+
+    @Test
+    void testEvaluateTacticalPosition_IdealPosition() {
+        // Setup
+        Point position = new Point(100, 100);
+        Wall wall = mock(Wall.class);
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = spy(new TankAI(controlledTank, mockClient));
+        doReturn(true).when(tankAI).hasPartialCover(any(), any(), any());
+        doReturn(true).when(tankAI).hasGoodFiringAngle(any(), any());
+
+        // Test
+        double score = tankAI.evaluateTacticalPosition(position, wall, playerTank);
+
+        // Verify - position has partial cover, good firing angle, and good distance
+        assertTrue(score > 80); // Should get high score for meeting all criteria
+    }
+
+    @Test
+    void testEvaluateTacticalPosition_NoAdvantages() {
+        // Setup
+        Point position = new Point(400, 400);
+        Wall wall = mock(Wall.class);
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = spy(new TankAI(controlledTank, mockClient));
+        doReturn(false).when(tankAI).hasPartialCover(any(), any(), any());
+        doReturn(false).when(tankAI).hasGoodFiringAngle(any(), any());
+
+        // Test
+        double score = tankAI.evaluateTacticalPosition(position, wall, playerTank);
+
+        // Verify - position has no tactical advantages
+        assertEquals(0, score);
+    }
+
+    @Test
+    void testEvaluateTacticalPosition_PartialAdvantages() {
+        // Setup
+        Point position = new Point(150, 150);
+        Wall wall = mock(Wall.class);
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = spy(new TankAI(controlledTank, mockClient));
+        doReturn(true).when(tankAI).hasPartialCover(any(), any(), any());
+        doReturn(false).when(tankAI).hasGoodFiringAngle(any(), any());
+
+        // Test
+        double score = tankAI.evaluateTacticalPosition(position, wall, playerTank);
+
+        // Verify - position has only partial cover advantage
+        assertTrue(score > 0 && score < 80); // Should get medium score
+    }
+
+    @Test
+    void testEvaluateTacticalPosition_OutOfRange() {
+        // Setup
+        Point position = new Point(100, 100);
+        Wall wall = mock(Wall.class);
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(100, 100, 20, 20));
+
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        TankAI tankAI = spy(new TankAI(controlledTank, mockClient));
+        doReturn(true).when(tankAI).hasPartialCover(any(), any(), any());
+        doReturn(false).when(tankAI).hasGoodFiringAngle(any(), any());
+
+        // Test
+        double score = tankAI.evaluateTacticalPosition(position, wall, playerTank);
+
+        // Verify - position is too far from ideal range
+        assertTrue(score < 80); // Should get lower score due to distance
+    }
 }

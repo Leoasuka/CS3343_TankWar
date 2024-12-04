@@ -134,8 +134,6 @@ public class TankClient extends Frame {
      * Draws game statistics on screen
      */
     private void drawGameStats(Graphics graphics) {
-        // graphics.drawString("Missiles Count: " + missiles.size(), 10, 50);
-        // graphics.drawString("Explosions Count: " + explosions.size(), 10, 70);
         graphics.drawString("Enemy Tanks Count: " + enemyTanks.size(), 10, 50);
         graphics.drawString("Player Health: " + playerTank.getHealthPoints(), 10, 70);
         graphics.drawString("Score: " + this.getScore(), 10, 90);
@@ -323,14 +321,21 @@ public class TankClient extends Frame {
     /**
      * Game rendering thread
      */
-    private class PaintThread implements Runnable {
+    class PaintThread implements Runnable {
+        volatile boolean running = true; // 添加一个标志变量
+
+        public void stop() { // 提供停止方法
+            running = false;
+        }
+
         public void run() {
-            while(true) {
+            while (running) { // 使用标志变量控制循环
                 repaint();
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    running = false; // 退出循环
                 }
             }
         }

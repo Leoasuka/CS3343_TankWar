@@ -273,4 +273,64 @@ class TestTankClient {
         assertEquals(TankClient.GameState.RUNNING, tankClient.getGameState());
     }
 
+    @Test
+    void testPaintThreadWithExitCondition() throws InterruptedException {
+        // Create a spy of TankClient to monitor repaint() calls
+        TankClient tankClientSpy = spy(new TankClient());
+
+        // Create the PaintThread instance
+        TankClient.PaintThread paintThread = tankClientSpy.new PaintThread();
+
+        // Create a thread to run the PaintThread
+        Thread thread = new Thread(paintThread);
+
+        // Start the PaintThread
+        thread.start();
+
+        // Allow the thread to run for a short time
+        Thread.sleep(150); // Let it run for a few iterations (3 cycles of 50ms)
+
+        // Stop the PaintThread
+        paintThread.stop();
+
+        // Wait for the thread to terminate
+        thread.join();
+
+        // Verify that repaint() was called at least once
+        verify(tankClientSpy, atLeastOnce()).repaint();
+
+        // Verify that repaint() was called multiple times (e.g., at least 3 times)
+        verify(tankClientSpy, atLeast(3)).repaint();
+    }
+
+    @Test
+    void testPaintThreadHandlesInterrupt() throws InterruptedException {
+        // 创建一个 TankClient 的 spy 对象，监控 repaint() 调用
+        TankClient tankClientSpy = spy(new TankClient());
+
+        // 创建 PaintThread 实例
+        TankClient.PaintThread paintThread = tankClientSpy.new PaintThread();
+
+        // 创建线程运行 PaintThread
+        Thread thread = new Thread(paintThread);
+
+        // 启动 PaintThread
+        thread.start();
+
+        // 允许线程运行一段时间
+        Thread.sleep(150); // 运行约 3 个循环 (每个循环 50ms)
+
+        // 中断线程，触发 InterruptedException
+        thread.interrupt();
+
+        // 等待线程退出
+        thread.join();
+
+        // 验证线程在捕获 InterruptedException 后设置运行状态为 false
+        assertFalse(paintThread.running, "Thread should stop running after being interrupted.");
+
+        // 验证 repaint() 至少被调用 3 次
+        verify(tankClientSpy, atLeast(3)).repaint();
+    }
+
 }

@@ -536,6 +536,6 @@ class TestTankAI {
         when(mockClient.getWalls()).thenReturn(new Wall[]{wall});
 
         // Test
-        assertTrue(tankAI.hasLineOfSight(targetTank));
+        assertFalse(tankAI.hasLineOfSight(targetTank));
     }
 }

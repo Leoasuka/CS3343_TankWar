@@ -21,7 +21,7 @@ public class TankClient extends Frame {
 
     // Player tank instance
     private Tank playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
-    private final WallManager wallManager;
+    private WallManager wallManager;
     private final TankGenerator tankGenerator;
 
     // Game object collections
@@ -275,6 +275,8 @@ public class TankClient extends Frame {
     void restartGame() {
         // Reset player tank
         playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+
+        wallManager = new WallManager(this);
 
         // Clear enemy tanks, missiles, and explosions
         enemyTanks.clear();

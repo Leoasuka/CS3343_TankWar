@@ -460,4 +460,82 @@ class TestTankAI {
         // Verify - position is too far from ideal range
         assertTrue(score < 80); // Should get lower score due to distance
     }
+    
+    @Test
+    void testHasLineOfSight_ClearPath() {
+        // Setup
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        Tank targetTank = mock(Tank.class);
+
+        when(controlledTank.getPositionX()).thenReturn(50);
+        when(controlledTank.getPositionY()).thenReturn(50);
+        when(targetTank.getPositionX()).thenReturn(100);
+        when(targetTank.getPositionY()).thenReturn(100);
+        
+        // No walls in the way
+        when(mockClient.getWalls()).thenReturn(new Wall[]{});
+
+        // Test
+        assertTrue(tankAI.hasLineOfSight(targetTank));
+    }
+
+    @Test
+    void testHasLineOfSight_WithWallBlocking() {
+        // Setup
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        Tank targetTank = mock(Tank.class);
+        Wall wall = mock(Wall.class);
+
+        when(controlledTank.getPositionX()).thenReturn(50);
+        when(controlledTank.getPositionY()).thenReturn(50);
+        when(targetTank.getPositionX()).thenReturn(100);
+        when(targetTank.getPositionY()).thenReturn(100);
+
+        // Setup wall that blocks the sight line
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(75, 75, 50, 50));
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall});
+
+        // Test
+        assertFalse(tankAI.hasLineOfSight(targetTank));
+    }
+
+    @Test
+    void testHasLineOfSight_TouchingWall() {
+        // Setup
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        Tank targetTank = mock(Tank.class);
+        Wall wall = mock(Wall.class);
+
+        when(controlledTank.getPositionX()).thenReturn(50);
+        when(controlledTank.getPositionY()).thenReturn(50);
+        when(targetTank.getPositionX()).thenReturn(75);
+        when(targetTank.getPositionY()).thenReturn(75);
+
+        // Setup wall that touches the sight line
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(75, 75, 50, 50));
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall});
+
+        // Test
+        assertFalse(tankAI.hasLineOfSight(targetTank));
+    }
+
+    @Test
+    void testHasLineOfSight_SlightlyObscured() {
+        // Setup
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+        Tank targetTank = mock(Tank.class);
+        Wall wall = mock(Wall.class);
+
+        when(controlledTank.getPositionX()).thenReturn(50);
+        when(controlledTank.getPositionY()).thenReturn(50);
+        when(targetTank.getPositionX()).thenReturn(100);
+        when(targetTank.getPositionY()).thenReturn(90);
+
+        // Setup wall that does not block the view but is close
+        when(wall.getCollisionBounds()).thenReturn(new Rectangle(75, 75, 50, 50));
+        when(mockClient.getWalls()).thenReturn(new Wall[]{wall});
+
+        // Test
+        assertTrue(tankAI.hasLineOfSight(targetTank));
+    }
 }

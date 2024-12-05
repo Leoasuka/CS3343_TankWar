@@ -277,6 +277,7 @@ public class TankClient extends Frame {
         playerTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
 
         wallManager = new WallManager(this);
+        wallManager.generateRandomWalls(5);
 
         // Clear enemy tanks, missiles, and explosions
         enemyTanks.clear();

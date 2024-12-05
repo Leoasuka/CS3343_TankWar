@@ -54,10 +54,20 @@ public class Tank {
 	// Current movement and barrel direction
 	private Direction moveDirection = Direction.STOP;
 	private Direction barrelDirection = Direction.D;
-
+	public Direction getTankMoveDirection(){
+		return moveDirection;
+	}
+	public void setTankMoveDirection(Direction direction){
+		moveDirection = direction;
+	}
 	// AI movement counter
 	private int movementStep = randomGenerator.nextInt(12) + 3;
-
+	public void setMovementStep(int step){
+		movementStep = step;
+	}
+	public int getMovementStep(){
+		return movementStep;
+	}
 	/**
 	 * Constructor for creating a basic tank
 	 */
@@ -68,7 +78,18 @@ public class Tank {
 		this.previousY = y;
 		this.isPlayerTank = isPlayer;
 	}
-
+	public int getCurrentX() {
+		return currentX;
+	}
+	public int getCurrentY() {
+		return currentY;
+	}
+	public void setTankCurrentX(int x){
+		this.currentX = x;
+	}
+	public void setTankCurrentY(int y){
+		this.currentY = y;
+	}
 	/**
 	 * Constructor for creating a tank with specific direction and game client
 	 */
@@ -339,7 +360,7 @@ public class Tank {
 	/**
 	 * Reverts tank to previous position (used for collision handling)
 	 */
-	private void revertToPreviousPosition() {
+	public void revertToPreviousPosition() {
 		currentX = previousX;
 		currentY = previousY;
 	}
@@ -598,7 +619,7 @@ public class Tank {
 	public int getPositionY() { return currentY; }
 	public void setBarrelDirection(Direction dir) { this.barrelDirection = dir; }
 	public void setMovementDirection(Direction dir) { this.moveDirection = dir; }
-	public Direction getBarrelDirection() { return barrelDirection; }
+//	public Direction getBarrelDirection() { return barrelDirection; }
 	public Direction getMoveDirection() {
 		return moveDirection;
 	}
@@ -608,7 +629,7 @@ public class Tank {
  * TankGenerator Class - Handles tank spawning logic and positioning
  * Ensures tanks spawn in valid positions without overlapping walls or other tanks
  */
-class TankGenerator {
+class TankGenerator  {
 	private final TankClient gameClient;
 	private final Random random = new Random();
 
@@ -665,7 +686,7 @@ class TankGenerator {
 	 * Finds a valid spawn position for a tank
 	 * @return Point representing valid spawn position, or null if none found
 	 */
-	private Point findValidSpawnPosition() {
+	 Point findValidSpawnPosition() {
 		for (int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS; attempt++) {
 			int x = random.nextInt(TankClient.GAME_WIDTH - Tank.TANK_WIDTH - SPAWN_PADDING * 2) + SPAWN_PADDING;
 			int y = random.nextInt(TankClient.GAME_HEIGHT - Tank.TANK_HEIGHT - SPAWN_PADDING * 2) + SPAWN_PADDING;

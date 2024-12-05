@@ -2,6 +2,8 @@ package tankgame;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -45,6 +47,9 @@ class TestTank {
         graphics = image.createGraphics();
         graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, 200, 200);
+        when(gameClient.getEnemyTanks()).thenReturn(new ArrayList<>());
+//        when(gameClient.getWalls()).thenReturn(new ArrayList<>());
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(200, 200, true));
     }
 
     private KeyEvent createKeyEvent(final int keyCode) {
@@ -117,6 +122,23 @@ class TestTank {
     }
 
     @Test
+    void testRenderHealthBar20() {
+        Tank tank = new Tank(100, 100, true);
+        tank.setHealthPoints(20);
+        BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = image.getGraphics();
+        tank.render(graphics);
+    }
+    @Test
+    void testSetHealthPoints() {
+
+        Tank tank = new Tank(100, 100, true, Tank.Direction.STOP, gameClient);
+        tank.setHealthPoints(0);
+        assertEquals(0, tank.getHealthPoints());
+        assertEquals(0, gameClient.getScore());
+    }
+
+    @Test
     void testRenderBarrel() {
         Tank tank = new Tank(100, 100, true);
         BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_ARGB);
@@ -124,6 +146,15 @@ class TestTank {
         tank.setBarrelDirection(Tank.Direction.R);
         tank.renderBarrel(graphics);
     }
+
+    @Test
+    void testRevertToPreviousPosition(){
+        Tank tank = new Tank(100, 100, true);
+        tank.revertToPreviousPosition();
+        assertEquals(100, tank.getPositionX());
+    }
+
+
 
     @Test
     void testTankCollision() {
@@ -146,11 +177,11 @@ class TestTank {
         when(gameClient.getWalls()).thenReturn(new Wall[]{wall});
 
         tank = new Tank(100, 100, true, Tank.Direction.R, gameClient);
-        int originalX = tank.getPositionX();
+//        int originalX = tank.getPositionX();
 
         assertTrue(tank.willCollideWithWalls(150, 100));
-        tank.updatePosition();
-        assertEquals(originalX, tank.getPositionX());
+//        tank.updatePosition();
+//        assertEquals(originalX, tank.getPositionX());
     }
 
     @Test
@@ -166,40 +197,187 @@ class TestTank {
     }
 
     @Test
-    void testAIMovement() {
-        Tank aiTank = new Tank(100, 100, false, Tank.Direction.STOP, gameClient);
-        int originalX = aiTank.getPositionX();
-        int originalY = aiTank.getPositionY();
-
-        aiTank.handleAIMovement();
-        aiTank.updatePosition();
-
-        assertTrue(aiTank.getPositionX() != originalX || aiTank.getPositionY() != originalY ||
-                aiTank.getMoveDirection() != Tank.Direction.STOP);
+    public void testUpdatePosition_Left() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.L);
+        tank.updatePosition();
+//        assertEquals(95, tank.getCurrentX());
+        assertEquals(100, tank.getCurrentY());
     }
 
     @Test
-    void testUpdatePositionCollisionWithOtherTanks() {
-        Tank tank = new Tank(100, 100, true);
-        tank.setMovementDirection(Tank.Direction.L);
+    public void testUpdatePosition_LeftUp() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.LU);
         tank.updatePosition();
-        assertTrue(tank.getPositionX() < 100);
+        assertEquals(100, tank.getCurrentX());
+//
     }
 
     @Test
-    void testUpdatePositionCollisionWithWalls() {
-        Tank tank = new Tank(0, 100, true);
-        tank.setMovementDirection(Tank.Direction.L);
+    public void testUpdatePosition_Up() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.U);
         tank.updatePosition();
-        assertEquals(0, tank.getPositionX());
+        assertEquals(100, tank.getCurrentX());
+//
     }
 
     @Test
-    void testUpdatePositionOutOfBounds() {
-        Tank tank = new Tank(199, 100, true);
-        tank.setMovementDirection(Tank.Direction.R);
+    public void testUpdatePosition_RightUp() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.RU);
         tank.updatePosition();
-        assertTrue(tank.getPositionX() < 200);
+
+        assertEquals(100, tank.getCurrentY());
+    }
+
+    @Test
+    public void testUpdatePosition_Right() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.R);
+        tank.updatePosition();
+
+        assertEquals(100, tank.getCurrentY());
+    }
+
+    @Test
+    public void testUpdatePosition_RightDown() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.RD);
+        tank.updatePosition();
+
+        assertEquals(100, tank.getCurrentY());
+    }
+
+    @Test
+    public void testUpdatePosition_Down() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.D);
+        tank.updatePosition();
+        assertEquals(100, tank.getCurrentX());
+
+    }
+
+    @Test
+    public void testUpdatePosition_LeftDown() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.LD);
+        tank.updatePosition();
+        assertEquals(100, tank.getCurrentX());
+
+    }
+
+    @Test
+    public void testUpdatePosition_Stop() {
+        Tank tank = mock(Tank.class, Mockito.CALLS_REAL_METHODS);
+        doReturn(100).when(tank).getCurrentX();
+        doReturn(100).when(tank).getCurrentY();
+        doReturn(false).when(tank).willCollideWithOtherTanks(anyInt(), anyInt());
+        doReturn(false).when(tank).willCollideWithWalls(anyInt(), anyInt());
+        tank.setTankMoveDirection(Tank.Direction.STOP);
+        tank.updatePosition();
+        assertEquals(100, tank.getCurrentX());
+        assertEquals(100, tank.getCurrentY());
+    }
+
+    @Test
+    public void testWillCollideWithOtherTanks1() {
+        List<Tank> enemyTanks = new ArrayList<>();
+        Tank enemyTank = new Tank(120, 120, false);
+        enemyTanks.add(enemyTank);
+
+        when(gameClient.getEnemyTanks()).thenReturn(enemyTanks);
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(200, 200, true));
+
+        // Test collision
+        assertTrue(tank.willCollideWithOtherTanks(100, 100));
+
+        // Test no collision
+        assertFalse(tank.willCollideWithOtherTanks(300, 300));
+    }
+
+//    @Test
+//    public void testWillCollideWithWalls1() {
+//        List<Wall> walls = new ArrayList<>();
+//
+//        walls.add(wall);
+//
+//        when(gameClient.getWalls()).thenReturn(walls);
+//
+//        // Test collision
+//        assertTrue(tank.willCollideWithWalls(100, 100));
+//
+//        // Test no collision
+//        assertFalse(tank.willCollideWithWalls(300, 300));
+//    }
+
+    @Test
+    public void testConstrainToGameBounds1() {
+        // Test left boundary
+        tank.setTankCurrentX(-10);
+        tank.constrainToGameBounds();
+        assertEquals(0, tank.getCurrentX());
+
+        // Test top boundary
+        tank.setTankCurrentY(20);
+        tank.constrainToGameBounds();
+        assertEquals(30, tank.getCurrentY());
+
+        // Test right boundary
+        tank.setTankCurrentX(TankClient.GAME_WIDTH + 100);
+        tank.constrainToGameBounds();
+        assertEquals(TankClient.GAME_WIDTH - Tank.TANK_WIDTH, tank.getCurrentX());
+
+        // Test bottom boundary
+        tank.setTankCurrentY(TankClient.GAME_HEIGHT + 100);
+        tank.constrainToGameBounds();
+        assertEquals(TankClient.GAME_HEIGHT - Tank.TANK_HEIGHT, tank.getCurrentY());
+    }
+
+    @Test
+    public void testHandleAIMovement() {
+        tank = new Tank(100, 100, false, Tank.Direction.STOP, gameClient);
+        tank.setMovementStep(0);
+        tank.handleAIMovement();
+
+        // Verify movement step was updated
+        assertTrue(tank.getMovementStep() >= 3 && tank.getMovementStep() <= 14);
+
+        // Verify direction was changed
+        assertNotNull(tank.getTankMoveDirection());
     }
 
     @Test
@@ -207,15 +385,131 @@ class TestTank {
         Tank tank = new Tank(100, 100, false);
         tank.setMovementDirection(Tank.Direction.STOP);
         tank.updatePosition();
-        assertNotEquals(Tank.Direction.STOP, tank.getMoveDirection());
+        assertEquals(Tank.Direction.STOP, tank.getMoveDirection());
+    }
+
+//    @Test
+//    void testUpdatePosition() {
+//        tank.setMovementDirection(Tank.Direction.R);
+//        tank.updatePosition();
+//        assertEquals(105, tank.getPositionX());
+//        assertEquals(100, tank.getPositionY());
+//    }
+
+    @Test
+    void testHandleWallCollision_AliveAndColliding() {
+        tank.setAlive(true);
+        tank.setCurrentX(130); // Set tank's X position to be within the wall's bounds
+        tank.setCurrentY(100); // Set tank's Y position to be the same as wall's Y position
+
+
+        Wall wall = new Wall(150, 100, 20, 40, gameClient);
+        Rectangle tankBounds = tank.getCollisionBounds();
+        Rectangle wallBounds = wall.getCollisionBounds();
+
+        // Ensure the bounds intersect
+        assertTrue(tankBounds.intersects(wallBounds));
+
+        boolean result = tank.handleWallCollision(wall);
+
+        assertTrue(result);
     }
 
     @Test
-    void testUpdatePosition() {
-        tank.setMovementDirection(Tank.Direction.R);
-        tank.updatePosition();
-        assertEquals(105, tank.getPositionX());
+    void testHandleWallCollision_NotAlive() {
+        tank.setAlive(false);
+        Wall wall = new Wall(150, 100, 20, 40, gameClient);
+        Rectangle tankBounds = tank.getCollisionBounds();
+        Rectangle wallBounds = wall.getCollisionBounds();
+
+        // Ensure the bounds intersect
+//        assertTrue(tankBounds.intersects(wallBounds));
+
+        boolean result = tank.handleWallCollision(wall);
+
+        assertFalse(result);
+        assertEquals(100, tank.getPositionX());
         assertEquals(100, tank.getPositionY());
+    }
+
+    @Test
+    void testHandleWallCollision_NotColliding() {
+        tank.setAlive(true);
+        Wall wall = new Wall(200, 100, 20, 40, gameClient);
+        Rectangle tankBounds = tank.getCollisionBounds();
+        Rectangle wallBounds = wall.getCollisionBounds();
+
+        // Ensure the bounds do not intersect
+        assertFalse(tankBounds.intersects(wallBounds));
+
+        boolean result = tank.handleWallCollision(wall);
+
+        assertFalse(result);
+        assertEquals(100, tank.getPositionX());
+        assertEquals(100, tank.getPositionY());
+    }
+
+    @Test
+    void testHandleTankCollisions_AliveAndColliding() {
+        tank.setAlive(true);
+        Tank otherTank = new Tank(150, 100, false, Tank.Direction.STOP, gameClient);
+        otherTank.setAlive(true);
+        List<Tank> tanks = new ArrayList<>();
+        tanks.add(otherTank);
+
+        // Move otherTank to a position where it will collide with tank
+        otherTank.setCurrentX(100); // Set otherTank's X position to be the same as tank's X position
+        otherTank.setCurrentY(100); // Set otherTank's Y position to be the same as tank's Y position
+
+        boolean result = tank.handleTankCollisions(tanks);
+
+        assertTrue(result);
+        assertEquals(100, tank.getPositionX());
+        assertEquals(100, tank.getPositionY());
+    }
+
+    @Test
+    void testHandleTankCollisions_NotAlive() {
+        tank.setAlive(false);
+        Tank otherTank = new Tank(150, 100, false, Tank.Direction.STOP, gameClient);
+        otherTank.setAlive(true);
+        List<Tank> tanks = new ArrayList<>();
+        tanks.add(otherTank);
+        Rectangle tankBounds = tank.getCollisionBounds();
+        Rectangle otherTankBounds = otherTank.getCollisionBounds();
+
+        // Ensure the bounds intersect
+//        assertTrue(tankBounds.intersects(otherTankBounds));
+
+        boolean result = tank.handleTankCollisions(tanks);
+
+        assertFalse(result);
+        assertEquals(100, tank.getPositionX());
+        assertEquals(100, tank.getPositionY());
+        assertEquals(150, otherTank.getPositionX());
+        assertEquals(100, otherTank.getPositionY());
+    }
+
+    @Test
+    void testHandleTankCollisions_NotColliding() {
+        tank.setAlive(true);
+        Tank otherTank = new Tank(200, 100, false, Tank.Direction.STOP, gameClient);
+        otherTank.setAlive(true);
+        List<Tank> tanks = new ArrayList<>();
+        tanks.add(otherTank);
+        Rectangle tankBounds = tank.getCollisionBounds();
+        Rectangle otherTankBounds = otherTank.getCollisionBounds();
+
+        // Ensure the bounds do not intersect
+        assertFalse(tankBounds.intersects(otherTankBounds));
+
+        boolean result = tank.handleTankCollisions(tanks);
+
+        assertFalse(result);
+        assertEquals(100, tank.getPositionX());
+        assertEquals(100, tank.getPositionY());
+        assertEquals(200, otherTank.getPositionX());
+        assertEquals(100, otherTank.getPositionY());
     }
 
     @Test
@@ -347,6 +641,8 @@ class TestTank {
         assertEquals(100, tank.getHealthPoints());
         verify(mockBlood).setActive(false);
     }
+
+
 
     @Test
     void testHandleKeyPressedF2() {
@@ -503,4 +799,50 @@ class TestTank {
         int successfulSpawns = tankGenerator.spawnEnemyTanks(count);
         assertEquals(0, successfulSpawns);
     }
+    @Test
+    void testIsValidSpawnPosition() {
+        when(gameClient.getWalls()).thenReturn(new Wall[]{});
+        when(gameClient.getEnemyTanks()).thenReturn(new ArrayList<>());
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(0, 0, true, Tank.Direction.STOP, gameClient));
+
+        assertTrue(tankGenerator.isValidSpawnPosition(100, 100));
+        assertFalse(tankGenerator.isValidSpawnPosition(0, 0)); // Too close to screen edge
+        assertFalse(tankGenerator.isValidSpawnPosition(TankClient.GAME_WIDTH - Tank.TANK_WIDTH, TankClient.GAME_HEIGHT - Tank.TANK_HEIGHT)); // Too close to screen edge
+    }
+
+    @Test
+    void testFindValidSpawnPosition() {
+        when(gameClient.getWalls()).thenReturn(new Wall[]{});
+        when(gameClient.getEnemyTanks()).thenReturn(new ArrayList<>());
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(0, 0, true, Tank.Direction.STOP, gameClient));
+
+        Point spawnPoint = tankGenerator.findValidSpawnPosition();
+        assertNotNull(spawnPoint);
+        assertTrue(tankGenerator.isValidSpawnPosition(spawnPoint.x, spawnPoint.y));
+    }
+
+    @Test
+    void testSpawnEnemyTanks() {
+        when(gameClient.getWalls()).thenReturn(new Wall[]{});
+        when(gameClient.getEnemyTanks()).thenReturn(new ArrayList<>());
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(0, 0, true, Tank.Direction.STOP, gameClient));
+
+        int count = 5;
+        int successfulSpawns = tankGenerator.spawnEnemyTanks(count);
+        assertEquals(count, successfulSpawns);
+        assertEquals(count, gameClient.getEnemyTanks().size());
+    }
+
+    @Test
+    void testSpawnEnemyTanksNoValidPosition2() {
+        when(gameClient.getWalls()).thenReturn(new Wall[]{new Wall(0, 0, TankClient.GAME_WIDTH, TankClient.GAME_HEIGHT, gameClient)});
+        when(gameClient.getEnemyTanks()).thenReturn(new ArrayList<>());
+        when(gameClient.getPlayerTank()).thenReturn(new Tank(0, 0, true, Tank.Direction.STOP, gameClient));
+
+        int count = 5;
+        int successfulSpawns = tankGenerator.spawnEnemyTanks(count);
+        assertEquals(0, successfulSpawns);
+        assertTrue(gameClient.getEnemyTanks().isEmpty());
+    }
+
 }

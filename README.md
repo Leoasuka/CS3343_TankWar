@@ -20,6 +20,9 @@ To play the game, follow these simple steps:
 3. Destroy enemy tanks to earn points.
 4. Be cautious, as being hit by enemy fire will decrease your health.
 5. Collect health power-ups to restore your tank's health to full.
+![Screenshot 2024-12-06 145820](https://github.com/user-attachments/assets/eb93f642-b9a9-432f-93d1-f00d46bea9b2)
+If you die you can choose play again or quit the game
+ ![Screenshot 2024-12-06 145837](https://github.com/user-attachments/assets/3bfbd838-8907-4555-ac27-a9cfa2c40fa1)
 
 ### Example
 Launch the game and use the arrow keys to position your tank on the battlefield. Strategically maneuver to avoid enemy fire while targeting and destroying enemy tanks. Keep an eye out for health power-ups to replenish your health and continue your battle. The game's objective is to achieve the highest score by defeating as many enemies as possible.

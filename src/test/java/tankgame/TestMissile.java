@@ -145,5 +145,169 @@ class TestMissile {
         verify(mockMissiles, times(1)).remove(missile);
     }
 
-}
+    @Test
+    public void testRenderActive() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+        missile.setActive(true);
 
+        Graphics mockGraphics = mock(Graphics.class);
+        List<Missile> mockMissiles = mock(List.class);
+        when(mockClient.getMissiles()).thenReturn(mockMissiles);
+
+        missile.render(mockGraphics);
+
+        verify(mockGraphics, times(1)).fillOval(x, y, Missile.MISSILE_WIDTH, Missile.MISSILE_HEIGHT);
+        verify(mockGraphics, never()).fillOval(x-1, y-1, Missile.MISSILE_WIDTH+2, Missile.MISSILE_HEIGHT+2);
+        verify(mockMissiles, never()).remove(missile);
+    }
+
+    @Test
+    public void testMissileCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Tank mockTank = mock(Tank.class);
+        when(mockTank.getPositionX()).thenReturn(x);
+        when(mockTank.getPositionY()).thenReturn(y);
+
+        boolean collision = missile.handleTankCollision(mockTank);
+
+        assertTrue(collision);
+    }
+
+    @Test
+    public void testMissileWallCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Wall mockWall = mock(Wall.class);
+        when(mockWall.getCollisionBounds()).thenReturn(new Rectangle(x, y, 10, 10));
+
+        boolean collision = missile.handleWallCollision(mockWall);
+
+        assertTrue(collision);
+    }
+
+    @Test
+    public void testMissileNoCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Tank mockTank = mock(Tank.class);
+        when(mockTank.getPositionX()).thenReturn(x + 10);
+        when(mockTank.getPositionY()).thenReturn(y + 10);
+
+        boolean collision = missile.handleTankCollision(mockTank);
+
+        assertFalse(collision);
+    }
+
+    @Test
+    public void testMissileNoWallCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Wall mockWall = mock(Wall.class);
+        when(mockWall.getCollisionBounds()).thenReturn(new Rectangle(x + 10, y + 10, 10, 10));
+
+        boolean collision = missile.handleWallCollision(mockWall);
+
+        assertFalse(collision);
+    }
+
+    @Test
+    public void testHandleTankCollisions() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Tank mockTank = mock(Tank.class);
+        when(mockTank.getPositionX()).thenReturn(x);
+        when(mockTank.getPositionY()).thenReturn(y);
+
+        List<Tank> tanks = List.of(mockTank);
+
+        boolean collision = missile.handleTankCollisions(tanks);
+
+        assertTrue(collision);
+    }
+
+    @Test
+    public void testHandleTankCollisionsNoCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Tank mockTank = mock(Tank.class);
+        when(mockTank.getPositionX()).thenReturn(x + 10);
+        when(mockTank.getPositionY()).thenReturn(y + 10);
+
+        List<Tank> tanks = List.of(mockTank);
+
+        boolean collision = missile.handleTankCollisions(tanks);
+
+        assertFalse(collision);
+    }
+
+    @Test
+    public void testHandleWallCollisions() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Wall mockWall = mock(Wall.class);
+        when(mockWall.getCollisionBounds()).thenReturn(new Rectangle(x, y, 10, 10));
+
+        boolean collision = missile.handleWallCollision(mockWall);
+
+        assertTrue(collision);
+    }
+
+    @Test
+    public void testHandleWallCollisionsNoCollision() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        TankClient mockClient = mock(TankClient.class);
+        Missile missile = new Missile(x, y, true, direction, mockClient);
+
+        Wall mockWall = mock(Wall.class);
+        when(mockWall.getCollisionBounds()).thenReturn(new Rectangle(x + 10, y + 10, 10, 10));
+
+        boolean collision = missile.handleWallCollision(mockWall);
+
+        assertFalse(collision);
+    }
+
+    @Test
+    public void testGetPositionX() {
+        int x = 100;
+        int y = 200;
+        Tank.Direction direction = Tank.Direction.U;
+        Missile missile = new Missile(x, y, direction);
+
+        assertEquals(x, missile.getPositionX());
+    }
+}

@@ -8,6 +8,7 @@ import java.util.List;
  * Manages different types of walls, dynamic generation, and wall damage
  */
 public class WallManager {
+
     // Wall type definitions
     public enum WallType {
         NORMAL,     // Standard wall
@@ -94,6 +95,12 @@ public class WallManager {
         for (TemporaryWall wall : temporaryWalls) {
             wall.render(graphics);
         }
+    }
+
+    public void cleanWalls() {
+        permanentWalls.clear();
+        breakableWalls.clear();
+        temporaryWalls.clear();
     }
 
     /**
@@ -471,4 +478,5 @@ class WallGenerator {
         // Temporary walls
         wallManager.addTemporaryWall(TankClient.GAME_WIDTH/2 - 100, 150, 200, 20);
     }
+
 }

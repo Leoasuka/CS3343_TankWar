@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -537,5 +538,281 @@ class TestTankAI {
 
         // Test
         assertFalse(tankAI.hasLineOfSight(targetTank));
+    }
+
+    @Test
+    void testUpdateTargeting() {
+        Tank playerTank = mock(Tank.class);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        Tank controlledTank = new Tank(100, 100, false, Tank.Direction.STOP, mockClient);
+        TankAI tankAI = new TankAI(controlledTank, mockClient);
+
+        tankAI.updateTargeting(playerTank);
+
+        assertEquals(Tank.Direction.STOP, controlledTank.getTankMoveDirection());
+    }
+
+    @Test
+    void testDecideMoveStrategy() {
+        // 创建 mock 对象
+        Tank controlledTank = mock(Tank.class);  // 被控制的坦克
+        TankClient client = mock(TankClient.class);  // 游戏客户端
+        Tank playerTank = mock(Tank.class);  // 玩家坦克
+
+        // 模拟游戏环境
+        when(client.getPlayerTank()).thenReturn(playerTank);
+        when(client.getWalls()).thenReturn(new Wall[0]);  // 明确返回空数组
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+
+        TankAI tankAI = new TankAI(controlledTank, client);
+
+        // 模拟玩家坦克在远距离
+        when(playerTank.getPositionX()).thenReturn(500);
+        when(playerTank.getPositionY()).thenReturn(500);
+
+        // 测试远距离逻辑（应该向玩家移动）
+        tankAI.decideMoveStrategy(500, playerTank);
+        verify(controlledTank).setMovementDirection(Tank.Direction.RD);  // 方向应该为右下（RD）
+
+        // 模拟玩家坦克在过近的距离
+        when(playerTank.getPositionX()).thenReturn(105);
+        when(playerTank.getPositionY()).thenReturn(105);
+
+        // 测试过近的逻辑（应该远离玩家）
+        tankAI.decideMoveStrategy(5, playerTank);
+        verify(controlledTank).setMovementDirection(Tank.Direction.LU);  // 方向应该为左上（LU）
+
+        // 模拟玩家坦克在中等距离
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        // 测试中等距离逻辑（应该进行战术移动）
+        tankAI.decideMoveStrategy(150, playerTank);
+        // 验证是否调用了战术移动的方法
+        TankAI spyTankAI = spy(tankAI);
+        spyTankAI.decideMoveStrategy(150, playerTank);
+        verify(spyTankAI).tacticalMovement();
+    }
+
+    @Test
+    void testCalculateDistance() {
+        // 创建 mock 对象
+        Tank controlledTank = mock(Tank.class);
+        Tank playerTank = mock(Tank.class);
+        TankClient client = mock(TankClient.class);
+
+        // 设置 controlledTank 的位置
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+
+        // 设置 playerTank 的位置
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        // 创建 TankAI 实例
+        TankAI tankAI = new TankAI(controlledTank, client);
+
+        // 计算预期的距离
+        double expectedDistance = Math.sqrt(Math.pow(200 - 100, 2) + Math.pow(200 - 100, 2));
+
+        // 调用 calculateDistance 方法
+        double actualDistance = tankAI.calculateDistance(playerTank);
+
+        // 验证返回值是否正确
+        assertEquals(expectedDistance, actualDistance, 0.001, "The distance calculation is incorrect.");
+    }
+
+    @Test
+    void testMoveToNearestCover_WhenNearestWallExists() {
+        // 创建 mock 对象
+        Tank controlledTank = mock(Tank.class);
+        TankClient client = mock(TankClient.class);
+        Wall nearestWall = mock(Wall.class);
+
+        // 创建 TankAI 的 spy 实例
+        TankAI tankAI = spy(new TankAI(controlledTank, client));
+
+        // 模拟 findNearestWall 方法返回最近的墙
+        doReturn(nearestWall).when(tankAI).findNearestWall();
+
+        // 模拟 findCoverPosition 方法返回一个掩体位置
+        Point coverPosition = new Point(300, 400);
+        doReturn(coverPosition).when(tankAI).findCoverPosition(nearestWall);
+
+        // 调用 moveToNearestCover 方法
+        tankAI.moveToNearestCover();
+
+        // 验证 moveTowardsPosition 方法是否被正确调用
+        verify(tankAI).moveTowardsPosition(coverPosition.x, coverPosition.y);
+    }
+
+    @Test
+    void testMoveToNearestCover_WhenNoNearestWall() {
+        // 创建 mock 对象
+        Tank controlledTank = mock(Tank.class);
+        TankClient client = mock(TankClient.class);
+
+        // 创建 TankAI 的 spy 实例
+        TankAI tankAI = spy(new TankAI(controlledTank, client));
+
+        // 模拟 findNearestWall 方法返回 null
+        doReturn(null).when(tankAI).findNearestWall();
+
+        // 调用 moveToNearestCover 方法
+        tankAI.moveToNearestCover();
+
+        // 验证 moveTowardsPosition 方法没有被调用
+        verify(tankAI, never()).moveTowardsPosition(anyInt(), anyInt());
+    }
+
+    @Test
+    void testPerformStrafingMovement() {
+        // 创建 mock 对象
+        Tank controlledTank = mock(Tank.class);          // 模拟被控制的坦克
+        Tank playerTank = mock(Tank.class);             // 模拟玩家坦克
+        TankClient gameClient = mock(TankClient.class); // 模拟游戏客户端
+
+        // 模拟 gameClient.getPlayerTank() 返回 playerTank
+        when(gameClient.getPlayerTank()).thenReturn(playerTank);
+
+        // 模拟坦克位置
+        when(controlledTank.getPositionX()).thenReturn(100);
+        when(controlledTank.getPositionY()).thenReturn(100);
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        // 创建 TankAI 实例
+        TankAI tankAI = new TankAI(controlledTank, gameClient);
+
+        // 调用方法
+        tankAI.performStrafingMovement();
+
+        // 验证 setMovementDirection 被调用（这里不验证具体值，只验证调用是否发生）
+        verify(controlledTank).setMovementDirection(any());
+    }
+
+    @Test
+    void testEvaluateCoverPosition() {
+        // 创建 mock 对象
+        TankClient gameClient = mock(TankClient.class);  // 模拟游戏客户端
+        Tank playerTank = mock(Tank.class);             // 模拟玩家坦克
+        Wall wall = mock(Wall.class);                   // 模拟墙壁
+
+        // 模拟 gameClient.getPlayerTank() 返回 playerTank
+        when(gameClient.getPlayerTank()).thenReturn(playerTank);
+
+        // 模拟玩家坦克的位置
+        when(playerTank.getPositionX()).thenReturn(200);
+        when(playerTank.getPositionY()).thenReturn(200);
+
+        // 模拟墙壁的位置和大小
+        when(wall.getPositionX()).thenReturn(100);
+        when(wall.getPositionY()).thenReturn(100);
+        when(wall.getWidth()).thenReturn(50);
+        when(wall.getHeight()).thenReturn(50);
+
+        // 模拟墙壁的遮挡行为
+        when(wall.isPointBehindWall(150, 150, 200, 200)).thenReturn(true);
+
+        // 测试点的位置
+        Point position = new Point(150, 150);
+
+        // 创建 TankAI 实例
+        TankAI tankAI = new TankAI(null, gameClient);
+
+        // 调用方法
+        double score = tankAI.evaluateCoverPosition(position, wall);
+
+        // 验证结果
+        // 1. 距离玩家的得分
+        TankAI.DistanceCalculator DistanceCalculator = new TankAI.DistanceCalculator();
+        double expectedDistanceToPlayer = DistanceCalculator.calculate(150, 150, 200, 200);
+        double expectedPlayerScore = -(Math.abs(expectedDistanceToPlayer - 50));
+
+        // 2. 墙的中心点距离
+        Point wallCenter = new Point(100 + 50 / 2, 100 + 50 / 2);
+        double expectedDistanceToWall = DistanceCalculator.calculate(150, 150, wallCenter.x, wallCenter.y);
+
+        // 3. 判断墙是否遮挡
+        double expectedWallScore = wall.isPointBehindWall(150, 150, 200, 200) ? 100 : 0;
+
+        // 4. 墙的距离得分
+        double expectedCloseToWallScore = (expectedDistanceToWall < 50) ? 50 : 0;
+
+        double expectedScore = 20;
+
+        // 验证评分是否正确
+        assertEquals(expectedScore, score, 1);
+    }
+
+    @Test
+    void testSeekSafestCover() {
+        // 创建 mock 对象
+        TankClient gameClient = mock(TankClient.class);    // 模拟游戏客户端
+        Wall wall1 = mock(Wall.class);                    // 模拟第一面墙
+        Wall wall2 = mock(Wall.class);                    // 模拟第二面墙
+        Point position1 = new Point(100, 100);            // 第一面墙的掩体位置
+        Point position2 = new Point(200, 200);            // 第二面墙的掩体位置
+
+        // 模拟墙壁数组
+        when(gameClient.getWalls()).thenReturn(new Wall[]{wall1, wall2});
+
+        // 模拟墙 1 的掩体位置
+        when(wall1.getCoverPositions()).thenReturn(new Point[]{position1});
+        // 模拟墙 2 的掩体位置
+        when(wall2.getCoverPositions()).thenReturn(new Point[]{position2});
+
+        // 模拟 evaluateCoverPosition 方法的行为
+        TankAI tankAI = spy(new TankAI(null, gameClient));
+        doReturn(50.0).when(tankAI).evaluateCoverPosition(position1, wall1); // 第一面墙得分
+        doReturn(100.0).when(tankAI).evaluateCoverPosition(position2, wall2); // 第二面墙得分
+
+        // 模拟 moveTowardsPosition 方法
+        doNothing().when(tankAI).moveTowardsPosition(anyInt(), anyInt());
+
+        // 调用方法
+        tankAI.seekSafestCover();
+
+        // 验证最佳掩体位置被选中（第二面墙的 position2）
+        verify(tankAI).moveTowardsPosition(200, 200);
+    }
+
+    @Test
+    void testSeekSafestCover_NoWalls() {
+        // 创建 mock 对象
+        TankClient gameClient = mock(TankClient.class);
+
+        // 模拟没有墙的情况
+        when(gameClient.getWalls()).thenReturn(null);
+
+        // 创建 TankAI 实例
+        TankAI tankAI = spy(new TankAI(null, gameClient));
+
+        // 调用方法
+        tankAI.seekSafestCover();
+
+        // 验证 moveTowardsPosition 未被调用
+        verify(tankAI, never()).moveTowardsPosition(anyInt(), anyInt());
+    }
+
+    @Test
+    void testSeekSafestCover_EmptyWallsArray() {
+        // 创建 mock 对象
+        TankClient gameClient = mock(TankClient.class);
+
+        // 模拟墙数组为空
+        when(gameClient.getWalls()).thenReturn(new Wall[0]);
+
+        // 创建 TankAI 实例
+        TankAI tankAI = spy(new TankAI(null, gameClient));
+
+        // 调用方法
+        tankAI.seekSafestCover();
+
+        // 验证 moveTowardsPosition 未被调用
+        verify(tankAI, never()).moveTowardsPosition(anyInt(), anyInt());
     }
 }

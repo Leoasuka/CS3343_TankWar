@@ -64,7 +64,7 @@ public class TankAI {
     /**
      * Updates tank's barrel direction to face player
      */
-    private void updateTargeting(Tank playerTank) {
+    void updateTargeting(Tank playerTank) {
         int dx = playerTank.getPositionX() - controlledTank.getPositionX();
         int dy = playerTank.getPositionY() - controlledTank.getPositionY();
 
@@ -79,7 +79,7 @@ public class TankAI {
     /**
      * Decides movement strategy based on distance to player
      */
-    private void decideMoveStrategy(double distance, Tank playerTank) {
+    void decideMoveStrategy(double distance, Tank playerTank) {
         if (distance > TARGETING_RANGE) {
             // Too far - move towards player
             moveTowardsPlayer(playerTank);
@@ -113,7 +113,7 @@ public class TankAI {
     /**
      * Enhanced tactical movement with better cover seeking
      */
-    private void tacticalMovement() {
+    void tacticalMovement() {
         // Check health status
         if (controlledTank.getHealthPoints() < DANGER_HEALTH) {
             // Low health - prioritize finding cover
@@ -135,12 +135,18 @@ public class TankAI {
     /**
      * Finds and moves to the safest available cover
      */
-    private void seekSafestCover() {
+    void seekSafestCover() {
+        Wall[] walls = gameClient.getWalls();
+        if (walls == null || walls.length == 0) {
+            // 如果没有墙或者墙数组为空，不进行任何操作
+            return;
+        }
+
         Wall bestWall = null;
         Point bestPosition = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
-        for (Wall wall : gameClient.getWalls()) {
+        for (Wall wall : walls) {
             Point[] coverPositions = wall.getCoverPositions();
             for (Point pos : coverPositions) {
                 double score = evaluateCoverPosition(pos, wall);
@@ -160,7 +166,7 @@ public class TankAI {
     /**
      * Evaluates how good a cover position is
      */
-    private double evaluateCoverPosition(Point position, Wall wall) {
+    double evaluateCoverPosition(Point position, Wall wall) {
         Tank playerTank = gameClient.getPlayerTank();
         double distanceToPlayer = DistanceCalculator.calculate(position.x, position.y,
                 playerTank.getPositionX(), playerTank.getPositionY());
@@ -197,7 +203,7 @@ public class TankAI {
     /**
      * Utility class for distance calculations
      */
-    private static class DistanceCalculator {
+    static class DistanceCalculator {
         /**
          * Calculate distance between two points
          */
@@ -231,14 +237,14 @@ public class TankAI {
         }
     }
 
-    private double calculateDistance(Tank playerTank) {
+    double calculateDistance(Tank playerTank) {
         return DistanceCalculator.calculate(controlledTank, playerTank);
     }
 
     /**
      * Finds and moves towards nearest cover
      */
-    private void moveToNearestCover() {
+    void moveToNearestCover() {
         Wall nearestWall = findNearestWall();
         if (nearestWall != null) {
             Point coverPosition = findCoverPosition(nearestWall);
@@ -249,7 +255,7 @@ public class TankAI {
     /**
      * Performs strafing movement pattern
      */
-    private void performStrafingMovement() {
+    void performStrafingMovement() {
         Tank playerTank = gameClient.getPlayerTank();
         double distance = calculateDistance(playerTank);
 
@@ -445,7 +451,7 @@ public class TankAI {
     /**
      * Converts angle to tank direction
      */
-    private Tank.Direction angleToDirection(double angle) {
+    Tank.Direction angleToDirection(double angle) {
         // Convert angle to 8-way direction
         double normalized = Math.toDegrees(angle);
         if (normalized < 0) normalized += 360;

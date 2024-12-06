@@ -21,7 +21,7 @@ To play the game, follow these simple steps:
 4. Be cautious, as being hit by enemy fire will decrease your health.
 5. Collect health power-ups to restore your tank's health to full.
 ![Screenshot 2024-12-06 145820](https://github.com/user-attachments/assets/eb93f642-b9a9-432f-93d1-f00d46bea9b2)
-If you die you can choose play again or quit the game
+</br>If you die you can choose play again or quit the game
  ![Screenshot 2024-12-06 145837](https://github.com/user-attachments/assets/3bfbd838-8907-4555-ac27-a9cfa2c40fa1)
 
 ### Example

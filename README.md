@@ -7,7 +7,7 @@ The Tank War Game is a classic game developed in Java. Engage in epic tank battl
 ## Installation Guide
 
 ### Method 1:
-Directly navigate to the `tank-war-game-1.0-SNAPSHOT-jar-with-dependencies.jar` file located in the project folder and launch the game to start playing.
+Directly navigate to the `tank-war-game.jar` file located in the project folder and launch the game to start playing.
 
 ### Method 2:
 Download the zip file or clone this repository from the following link: [CS3343_TankWar](https://github.com/Leoasuka/CS3343_TankWar.git). Create a Java project in Eclipse or any other IDE that supports Java, then compile and run the project.

@@ -8,8 +8,8 @@ import java.util.List;
  */
 public class Missile {
 	// Constants for missile movement speed
-	public static final int MOVEMENT_SPEED_X = 10;
-	public static final int MOVEMENT_SPEED_Y = 10;
+	public static int MOVEMENT_SPEED_X = 10;
+	public static int MOVEMENT_SPEED_Y = 10;
 
 	// Constants for missile dimensions
 	public static final int MISSILE_WIDTH = 10;
@@ -122,7 +122,7 @@ public class Missile {
 	/**
 	 * Checks if missile has left game boundaries
 	 */
-	private void checkBoundaryCollision() {
+    void checkBoundaryCollision() {
 		if(positionX < 0 || positionY < 0 ||
 				positionX > TankClient.GAME_WIDTH ||
 				positionY > TankClient.GAME_HEIGHT) {

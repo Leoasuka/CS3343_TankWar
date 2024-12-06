@@ -68,6 +68,7 @@
         <!-- 定义源码和测试目录 -->
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+        <finalName>tank-war-game</finalName>
 
         <!-- 资源目录配置 -->
         <resources>
@@ -134,7 +135,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>main.main</mainClass>
+                            <mainClass>tankgame.Main</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>

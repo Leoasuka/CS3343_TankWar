@@ -1,4 +1,5 @@
 tankgame/TestTankClient.class
+tankgame/TestWallManager.class
 tankgame/TestWall$MockGraphics.class
 tankgame/TestTank.class
 tankgame/TestWall.class

@@ -2,7 +2,7 @@
 
 ## Description of the Application
 
-The Tank War Game is a backend-only game developed in Java. Engage in epic tank battles and earn points by defeating enemies. We invite you to dive into the action and enjoy the game.
+The Tank War Game is a classic game developed in Java. Engage in epic tank battles and earn points by defeating enemies. We invite you to dive into the action and enjoy the game.
 
 ## Installation Guide
 
@@ -20,6 +20,7 @@ To play the game, follow these simple steps:
 3. Destroy enemy tanks to earn points.
 4. Be cautious, as being hit by enemy fire will decrease your health.
 5. Collect health power-ups to restore your tank's health to full.
+6. **Special Easter Egg**: Press the 'A' key to unleash a barrage of missiles in all directions. This powerful attack can turn the tide of battle but is limited, so use it wisely!
 
 </br>![Screenshot 2024-12-06 145820](https://github.com/user-attachments/assets/eb93f642-b9a9-432f-93d1-f00d46bea9b2)
 </br>If you die you can choose play again or quit the game
